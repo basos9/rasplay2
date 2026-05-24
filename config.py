@@ -34,7 +34,7 @@ TRANS = SimpleNamespace(
 	host=tr_cfg.get("host", "localhost"),
 	port=tr_cfg.get("port", 9091),
 	user=tr_cfg.get("user", "transmission"),
-	password=tr_cfg.get("password", "transmission"),
+	password=tr_cfg.get("password", ""),
 )
 
 
@@ -54,5 +54,13 @@ BUTTONS = SimpleNamespace(
 # Mounts regex for SysInfo
 sys_cfg = _cfg.get("sys", {})
 SYS = SimpleNamespace(
-    mntreg=sys_cfg.get("mntreg", "^/|xoros|data|aux")
+    mntreg=sys_cfg.get("mntreg", "^/")
+)
+
+
+# Grouped RADIO settings (streaming stations)
+radio_cfg = _cfg.get("radio", {})
+presets_cfg = radio_cfg.get("presets", {})
+RADIO = SimpleNamespace(
+    presets=presets_cfg if presets_cfg else None
 )

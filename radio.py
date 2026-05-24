@@ -2,18 +2,8 @@
 from menu import MenuController
 from mpdc import MPDC
 from _threads import LogicException
+from radioCatalog import RadioCatalog, PresetsRadioCatalog
 
-## TODO: COnfig
-PRESET_STATIONS = {
-    # Weird Fishes Radio
-    "weirdfishes": "https://stream.radiojar.com/w47v0ekgzp5tv?1778684494=",
-
-    # SomaFM
-    "soma/groovesalad": "https://ice2.somafm.com/groovesalad-128-mp3",
-    "soma/dronezone": "https://ice2.somafm.com/dronezone-128-mp3",
-    "soma/lush": "https://ice2.somafm.com/lush-128-mp3",
-
-}
 
 # eventDef = (
 #     "down",
@@ -23,21 +13,14 @@ PRESET_STATIONS = {
 SHOWPLAYER_INSECS = 5
 
 class Radio():
-    def __init__(self, mpdc: MPDC, screen_lines, onReturnControl):
-        self.memory = PRESET_STATIONS
-        self.menuController = MenuController(self._getMenuDef(), screen_lines)
+    def __init__(self, mpdc: MPDC, screen_lines, onReturnControl, radioCatalog: RadioCatalog):
+        self.memory = radioCatalog.getDef()
+        self.menuController = MenuController(radioCatalog.getMenuDef(), screen_lines)
         self.mpd = mpdc
         self.onReturnControl = onReturnControl
         self.current_screenmode = "menu"
         self.prev_screenmode = ""
         self.showPlayerIn = -1
-    
-    def _getMenuDef(self):
-        menuDef = {}
-        for key in self.memory:
-            menuDef[key] = key.title()
-        #menuDef["catalog"] = "Catalog"
-        return menuDef
     
     def setScreenMode(self, mode):
         self.current_screenmode = mode
@@ -86,8 +69,10 @@ class Radio():
         action=""
         if self.current_screenmode == "menu":
             action = "menu NAV select"
-            if self.menuController.get_menu() == "catalog":
-                self.setScreenMode("catalog")
+            if self.menuController.menu_select():
+                pass
+            #elif self.menuController.get_menu() == "catalog":
+            #    self.setScreenMode("catalog")
             elif self.selectStation(False):
                 self.setScreenMode("player")
         elif self.current_screenmode == "player":

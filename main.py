@@ -13,7 +13,7 @@ from buttons import buttonsCtrl
 from controller import Controller
 from _keymock import keymock
 
-version = "2.2.0"
+version = "2.3.0"
 
 ## CONFIG
 ##

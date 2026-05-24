@@ -75,18 +75,20 @@ class disp_ssd1306(disp_oled):
   def getRenderStats(self):
     return f"~ {self.renderStats.get_avg():.3f}"
 
+  ## Probably will delete
   # Alternatively load a TTF font.  Make sure the .ttf font file is in the same directory as the python script!
   # Some other nice fonts to try: http://www.dafont.com/bitmap.php
   # font = ImageFont.truetype('Minecraftia.ttf', 12)
-  def lShowL(self, lines, dprint=False):
-    if (dprint):
-      print("---L: ",lines)
-    x = 0
-    lineHeight = 12
-    y = -2
-    i = 0
-    with canvas(self.device) as draw:
-      for line in lines:
-        draw.text((x, y+i*lineHeight), str(line),  font=font, fill=255)
-        i=i+1
+  # def lShowL(self, lines, dprint=False):
+  #   if (dprint):
+  #     print("---L: ",lines)
+  #   x = 0
+  #   lineHeight = 12
+  #   y = -2
+  #   i = 0
+  #   font = self.font
+  #   with canvas(self.device) as draw:
+  #     for line in lines:
+  #       draw.text((x, y+i*lineHeight), str(line),  font=font, fill=255)
+  #       i=i+1
     

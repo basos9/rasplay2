@@ -18,4 +18,10 @@ buttons:
   set: BOARD38
   rst: BOARD40
 
+radio:
+  presets:
+    soma/groovesalad: "https://ice2.somafm.com/groovesalad-128-mp3"
+    soma/dronezone: "https://ice2.somafm.com/dronezone-128-mp3"
+    soma/lush: "https://ice2.somafm.com/lush-128-mp3"
+
 mntreg: "^/|xoros|data|aux"
