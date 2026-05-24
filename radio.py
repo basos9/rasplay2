@@ -69,7 +69,7 @@ class Radio():
         action=""
         if self.current_screenmode == "menu":
             action = "menu NAV select"
-            if self.menuController.menu_select():
+            if not self.menuController.menu_select():
                 pass
             #elif self.menuController.get_menu() == "catalog":
             #    self.setScreenMode("catalog")
