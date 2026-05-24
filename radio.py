@@ -1,6 +1,6 @@
 
 from menu import MenuController
-from _mpdc import MPDC
+from mpdc import MPDC
 from _threads import LogicException
 
 ## TODO: COnfig

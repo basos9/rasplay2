@@ -10,7 +10,7 @@ from menu import MenuController
 from _sysinfo import SysInfo
 import time
 
-from _mpdc import MPDC
+from mpdc import MPDC
 from disp import disp_oled
 from transstats import TRA
 from radio import Radio

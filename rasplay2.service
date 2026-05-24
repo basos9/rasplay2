@@ -1,5 +1,5 @@
 [Unit]
-Description=Rasplay Hyper Controler V2. Mpd frontent. Buttons and oled dusplay for rpi 
+Description=Rasplay Hyper Controler V2. Mpd frontent, buttons, oled display and more for raspberri pi
 #Wants=
 After=mpd.service
 Conflicts=raplay1.service

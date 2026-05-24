@@ -5,13 +5,13 @@
 
 #import time
 
-from _mpdc import MPDC
+from mpdc import MPDC
 from transstats import TRA
 from _sysinfo import SysInfo
 from disp import disp_ssd1306
 from buttons import buttonsCtrl
 from controller import Controller
-from keymock import keymock
+from _keymock import keymock
 
 version = "2.2.0"
 
