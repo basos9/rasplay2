@@ -1,0 +1,9 @@
+
+luma.oled
+gpiozero
+python-mpd2
+numpy
+transmission_rpc
+psutil
+RPi.GPIO
+PyYAML

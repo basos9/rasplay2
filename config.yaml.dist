@@ -1,0 +1,21 @@
+mpd:
+  host: localhost
+  port: 6600
+  password: playerOfFUN1
+
+transmission:
+  host: localhost
+  port: 9091
+  user: transmission
+  password: transmission
+
+buttons:
+  up: BOARD36
+  down: BOARD31
+  left: BOARD32
+  right: BOARD33
+  mid: BOARD37
+  set: BOARD38
+  rst: BOARD40
+
+mntreg: "^/|xoros|data|aux"
