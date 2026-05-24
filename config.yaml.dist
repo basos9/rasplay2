@@ -1,7 +1,7 @@
 mpd:
   host: localhost
   port: 6600
-  password: playerOfFUN1
+  password: 
 
 transmission:
   host: localhost

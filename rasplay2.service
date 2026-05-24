@@ -6,6 +6,7 @@ Conflicts=raplay1.service
 
 [Service]
 Type=exec
+Environment=CONFIG_FILE=/usr/local/etc/rasplay2/config.yaml
 ExecStart=/usr/local/share/rasplay2/venv/bin/python3 /usr/local/share/rasplay2/main.py
 Restart=on-failure
 RestartSec=5

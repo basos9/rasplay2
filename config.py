@@ -4,7 +4,9 @@ import os
 import yaml
 
 # Try to load YAML configuration; fall back to defaults if missing
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.yaml")
+CONFIG_FILE = os.environ.get("CONFIG_FILE")
+if not CONFIG_FILE:
+	CONFIG_FILE = os.path.join(os.path.dirname(__file__), "config.yaml")
 
 
 def _load_yaml(path):
@@ -15,7 +17,7 @@ def _load_yaml(path):
 		raise FileNotFoundError(f"Could not load configuration from {path}. Please create a config.yaml fbased on config.yaml.dist.")
 
 
-_cfg = _load_yaml(CONFIG_PATH)
+_cfg = _load_yaml(CONFIG_FILE)
 
 # Grouped MPD settings
 mpd_cfg = _cfg.get("mpd", {})
