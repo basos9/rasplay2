@@ -12,7 +12,7 @@ class disp_oled():
 
 
 class disp_ssd1306(disp_oled):
-  def __init__(self, LCD_I2C_PORT=1, LDC_I2C_ADDR=0x3C):
+  def __init__(self, screen_lines, LCD_I2C_PORT=1, LDC_I2C_ADDR=0x3C):
         # rev.1 users set port=0
     # substitute spi(device=0, port=0) below if using that interface
     # substitute bitbang_6800(RS=7, E=8, PINS=[25,24,23,27]) below if using that interface
@@ -26,6 +26,7 @@ class disp_ssd1306(disp_oled):
     self.skipped = 0
     self.prevSkipped = 0 
     self.renderStats = RunningAverage(60)
+    self.screen_lines = screen_lines
 
       # Load default font.
 
@@ -34,6 +35,10 @@ class disp_ssd1306(disp_oled):
       "l":  ImageFont.load_default(16),
       "ll": ImageFont.load_default(20)
     }
+
+  ## TODO auto detect maybe
+  def getScreenLines(self):
+    return self.screen_lines
 
   ## painting
   def lShow(self, strin: str|list, dprint: bool =False, sz: str = ""):

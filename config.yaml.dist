@@ -2,12 +2,15 @@ mpd:
   host: localhost
   port: 6600
   password: 
+<<<<<<< HEAD
 
 transmission:
   host: localhost
   port: 9091
   user: transmission
   password: transmission
+=======
+>>>>>>> 50f2c04 (refactor controller, radio)
 
 buttons:
   up: BOARD36
@@ -18,10 +21,21 @@ buttons:
   set: BOARD38
   rst: BOARD40
 
+display:
+  type: ssd1306
+  screen_lines: 4
+
 radio:
   presets:
     soma/groovesalad: "https://ice2.somafm.com/groovesalad-128-mp3"
     soma/dronezone: "https://ice2.somafm.com/dronezone-128-mp3"
     soma/lush: "https://ice2.somafm.com/lush-128-mp3"
 
-mntreg: "^/|xoros|data|aux"
+sys:
+  mntreg: "^/"
+
+transmission:
+  host: localhost
+  port: 9091
+  user: transmission
+  password: transmission

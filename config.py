@@ -50,6 +50,11 @@ BUTTONS = SimpleNamespace(
 	rst=btn_cfg.get("rst", "BOARD40"),
 )
 
+disp_cfg = _cfg.get("display", {})
+DISP = SimpleNamespace(
+	type = disp_cfg.get("type", "ssd1306"),
+	screen_lines = disp_cfg.get("screen_lines", 4)
+)
 
 # Mounts regex for SysInfo
 sys_cfg = _cfg.get("sys", {})
@@ -60,7 +65,6 @@ SYS = SimpleNamespace(
 
 # Grouped RADIO settings (streaming stations)
 radio_cfg = _cfg.get("radio", {})
-presets_cfg = radio_cfg.get("presets", {})
 RADIO = SimpleNamespace(
-    presets=presets_cfg if presets_cfg else None
+    presets=radio_cfg.get("presets", None)
 )

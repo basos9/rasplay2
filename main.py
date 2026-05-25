@@ -12,28 +12,27 @@ from disp import disp_ssd1306
 from buttons import buttonsCtrl
 from controller import Controller
 from _keymock import keymock
+from radioCatalog import RadioCatalogPresets
 
 version = "2.3.0"
 
 ## CONFIG
 ##
 ## Load runtime configuration from config.py
-from config import MPD, TRANS, BUTTONS, SYS
+from config import MPD, TRANS, BUTTONS, SYS, DISP, RADIO
 
 ## Init
 ##
 
-disp = disp_ssd1306()
+if DISP.type == "ssd1306":
+    disp = disp_ssd1306(DISP.screen_lines)
+else:
+    raise ValueError(f"Unsupported display type {DISP.type}")
+
 mpd = MPDC(MPD.host, MPD.port, MPD.password)
 sysInfo = SysInfo(SYS.mntreg)
 
 ctrl = Controller(mpd, disp, sysInfo, version)
-
-try:
-  tra = TRA(TRANS.host, TRANS.port, TRANS.user, TRANS.password)
-  ctrl.setTransmission(tra)
-except Exception as e:
-   print("Error init transmission "+str(e))
 
 bat = buttonsCtrl(
   ctrl,
@@ -46,6 +45,18 @@ bat = buttonsCtrl(
   bRst=BUTTONS.rst,
 )
 
+try:
+  tra = TRA(TRANS.host, TRANS.port, TRANS.user, TRANS.password)
+  ctrl.setTransmission(tra)
+except Exception as e:
+   print("Error init transmission "+str(e))
+
+try:
+    radioCatalogPresets = RadioCatalogPresets(RADIO.presets)
+    ctrl.setRadioCatalog(radioCatalogPresets)
+except ValueError as e:
+    print(f"Error initializing radio, skipping: {e}")
+    radioCatalogPresets = None
 
 mpd.printDebug()
 print(sysInfo.showInfo())

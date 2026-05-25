@@ -1,5 +1,3 @@
-from config import RADIO
-
 
 class RadioCatalog():
     def getDef(self):
@@ -13,8 +11,8 @@ class RadioCatalog():
         return menuDef
 
 
-class PresetsRadioCatalog(RadioCatalog):
-    def __init__(self):
-        if RADIO.presets is None:
+class RadioCatalogPresets(RadioCatalog):
+    def __init__(self, presets):
+        if presets is None:
             raise ValueError("RADIO presets not defined in config.yaml")
-        self.radioDef = RADIO.presets
+        self.radioDef = presets

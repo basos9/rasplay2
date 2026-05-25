@@ -7,3 +7,4 @@ transmission_rpc
 psutil
 RPi.GPIO
 PyYAML
+pyradios

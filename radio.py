@@ -2,7 +2,7 @@
 from menu import MenuController
 from mpdc import MPDC
 from _threads import LogicException
-from radioCatalog import RadioCatalog, PresetsRadioCatalog
+from radioCatalog import RadioCatalog, RadioCatalogPresets
 
 
 # eventDef = (
@@ -12,7 +12,7 @@ from radioCatalog import RadioCatalog, PresetsRadioCatalog
 
 SHOWPLAYER_INSECS = 5
 
-class Radio():
+class RadioController():
     def __init__(self, mpdc: MPDC, screen_lines, onReturnControl, radioCatalog: RadioCatalog):
         self.memory = radioCatalog.getDef()
         self.menuController = MenuController(radioCatalog.getMenuDef(), screen_lines)
@@ -88,13 +88,11 @@ class Radio():
             if not self.menuController.menu_prev():
                 #self.setScreenMode("_back")
                 action+=" exit"
-                self.mpd.stop()
-                self.onReturnControl()
+                self.close()
             #self.display()
         elif self.current_screenmode == "player" :
              action="player exiting"
-             self.mpd.stop()
-             self.onReturnControl()
+             self.close()
         #     self.setScreenMode("menu")
         #     self.showPlayerIn = SHOWPLAYER_INSECS *2
         #     #self.display()
@@ -111,6 +109,12 @@ class Radio():
                 self.setScreenMode("player")
         if not self.isRadioPlaying():
             self.onReturnControl()
+
+    def close(self):
+        print("Closing radio player, stopping MPD, clearing queue")
+        self.mpd.stop()
+        self.mpd.clear()
+        self.onReturnControl()
 
     def selectStation(self, schedPlayer = True):
         sta = self.menuController.get_menu()
