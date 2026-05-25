@@ -5,7 +5,7 @@ Rasplay is a music player frontent for Rasberry Pi. See below for hardware confi
     - Internel radio browser and player
         - Browse and play radio stations from a predefined list.append
         - Browse internel-radio catalog by various categories (genre, country, language)
--   - Display controller for OLED screen (SSD1306)
+    - Display controller for OLED screen (SSD1306)
     - Physical buttons control (GPIO)
     - Other functionalities
         - Transmission torrent client stats display
@@ -34,14 +34,17 @@ Currently this works with a ssd1306 OLED display wired on the I2C pins for displ
 ## WIRING for DISPLAY (128x64)
 1.3 inch oled IIC Serial White OLED Display Module 128X64 I2C SSD1306 12864 LCD Screen Board VDD GND SCK SDA for Arduino Black
 GPIO physical BCD - cable - DISPLAY pinout SSD1306 128X64 
+```
 1 VCC3         - blue - 4
 3 GPIO02(SDA1) - purple - 1
 5 GPIO03(SCL1) - grey  - 2
 9 GND          - white - 3
+```
 
 ### WIRING for BUTTONS (7 buttons)
 NOYITO 5-Channel Five Direction Button Module 5D Rocker Joystick Development Board - Up Down Left Right Center Click Switch Module 
 
+```
 GPIO physical BCD  - BUTTON (ROTATED BUTTON)
 34 Ground - purple - COM/GND 1 
 32 GPIO12 - grey   - UP 2 (LEFT)
@@ -51,6 +54,7 @@ GPIO physical BCD  - BUTTON (ROTATED BUTTON)
 37 GPIO26 - orange - MID 6
 38 GPIO20 - red    - SET 7
 40 GPIO21 - brown  - RST 8
+```
 ---
 other pins
 35 GPIO19 
