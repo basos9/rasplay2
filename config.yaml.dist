@@ -2,15 +2,12 @@ mpd:
   host: localhost
   port: 6600
   password: 
-<<<<<<< HEAD
 
 transmission:
   host: localhost
   port: 9091
   user: transmission
-  password: transmission
-=======
->>>>>>> 50f2c04 (refactor controller, radio)
+  password: 
 
 buttons:
   up: BOARD36
