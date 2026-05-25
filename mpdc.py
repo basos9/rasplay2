@@ -46,11 +46,12 @@ class MPDC:
       if getStatus or self.status is None:
         self.status = self.mpd.status()
       if self.status is None:
-        self.status = {}
+        return {}
       return self.status
     except Exception as e:
       print("Error getting MPD status: "+str(e))
       self.reconn()
+      return {}
 
   def getState(self, getStatus=True):
     return self.getStatus(getStatus).get("state")
@@ -259,7 +260,7 @@ class MPDC:
       playlist = self.mpd.playlistid()
       print("MPD: "+str(status)+"\n CUR:"+str(current))
       print(" PLI:"+str(playlist))
-      print("TAG "+str(self.mpd.tagtypes()))
+      #print("TAG "+str(self.mpd.tagtypes()))
       print(self.mpd.playlistfind("file","willnotfind"))
 
 
