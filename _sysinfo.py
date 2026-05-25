@@ -171,6 +171,8 @@ class SysInfo():
     lines.append(MemUsage)
     Disk = f'{sysCmdInfo.getDiskUsage(self.mntreg)}'
     lines.append(Disk)
+    net = self.showNetInfo()
+    lines.append(net)
     #lines.append("IPs: " + IP)
 
     return lines
