@@ -26,7 +26,7 @@ from _base import ControllerBase, UnknownEventException
 SHUTDOWN_DELAY = 30
 MPD_SHOWPAUSEDFORSECS = 100
 ERRSHOW_FORSECS = 3
-SYSSHOW_FORSECS = 20
+SYSSHOW_FORSECS = 60
 SYSDISP_CPU_THRES = 20
 SHOWCLOCK_FORSECS = 60
 SYSPRINT_EVERYSECS = 10
@@ -78,7 +78,8 @@ class Controller(ControllerBase):
         self.shutDownCmd = None
         self.wallTimePrev = -1
         self.showPauseFor = -2
-        self.showSysFor = -1
+        self.showScreenFor = -1
+        self.showScreen = None
         self.last_error = None
         self.showErrorFor = -1
         self.blinkTimeDot = 1
@@ -294,11 +295,12 @@ class Controller(ControllerBase):
         self.shutDownCmd = None
         self.setScreenMode("main")
         
-    def schedStatsM(self):
-        #if self.showSysFor < 0:
-          print("Schedule system stats display for " + str(SYSSHOW_FORSECS) + " seconds...")
-          self.showSysFor = SYSSHOW_FORSECS
-          self.setScreen("stats")
+    def schedScreenMain(self, screen, showForSecs):
+        #if self.showScreenFor < 0:
+          print(f"Schedule {screen} display for {showForSecs} seconds...")
+          self.showScreenFor = showForSecs
+          self.showScreen = screen
+          self.setScreen(screen)
         # else:
         #   print("Cancel scheduled system stats display...")
         #   self.showSysFor = -1
@@ -335,13 +337,16 @@ class Controller(ControllerBase):
       if not self.menuController.menu_select():
           pass
       elif self.menuController.get_menu() == "stats":
-          self.setScreenMode("stats")
+          self.setScreenMode("main")
+          self.schedScreenMain("stats", SYSSHOW_FORSECS)
       elif self.menuController.get_menu() == "top":
-          self.setScreenMode("top")
+          self.setScreenMode("main")
+          self.schedScreenMain("top", SYSSHOW_FORSECS)
       elif self.menuController.get_menu() == "player":
           self.setScreenMode("player")
       elif self.menuController.get_menu() == "transmission":
-          self.setScreenMode("transmission")
+          self.setScreenMode("main")
+          self.schedScreenMain("transmission", SYSSHOW_FORSECS)
       elif self.menuController.get_menu() == "reboot":
           self.schedShutdownM(self.cmdReboot)
       elif self.menuController.get_menu() == "shutdown":
@@ -357,7 +362,7 @@ class Controller(ControllerBase):
   
     def resetMain(self):
         self.showPauseFor = -2
-        self.showSysFor = -1
+        self.showScreenFor = -1
         self.showErrorFor = -1
         self.showClockFor = SHOWCLOCK_FORSECS
         self.last_error = None
@@ -399,8 +404,8 @@ class Controller(ControllerBase):
                 self.showGreetFor = self.showGreetFor - diffTime
                 self.mprint(self.prev_screen != "main", f"main: show gret for {self.showGreetFor:.0f} more secs")
                 #
-            elif self.mainSysFence(diffTime):
-                self.setScreen("stats")
+            elif self.mainScreenFence(diffTime):
+                self.setScreen(self.showScreen)
             elif self.mainPlayerFence(diffTime):
                 self.setScreen("player")
             elif self.sysinfo.getAvgCpuPct() > SYSDISP_CPU_THRES :
@@ -411,14 +416,14 @@ class Controller(ControllerBase):
             else:
                 self.resetScreen()
 
-    def mainSysFence(self, diffTime):
-        if self.showSysFor > 0:
-            self.showSysFor = self.showSysFor - diffTime
-            if (self.showSysFor < 0):
-                self.showSysFor = -1
+    def mainScreenFence(self, diffTime):
+        if self.showScreenFor > 0:
+            self.showScreenFor = self.showScreenFor - diffTime
+            if (self.showScreenFor < 0):
+                self.showScreenFor = -1
                 return False
             else:
-                self.mprint(False, f"main: show sys stats for {self.showSysFor:.0f} more secs")
+                self.mprint(False, f"main: show {self.showScreen} for {self.showScreenFor:.0f} more secs")
                 return True
         return False
 

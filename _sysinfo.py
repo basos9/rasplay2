@@ -153,9 +153,7 @@ class SysInfo():
       return self.CI.getAvgCpuPct()
 
   def showNetInfo(self):
-      lines = list()
-      lines.append("Net R/T: " + self.CI.getAvgNetRXTX())
-      return lines
+      return "Net R/T: " + self.CI.getAvgNetRXTX()
 
   def track(self,diffTime):
     self.CI.track(diffTime)
