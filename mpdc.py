@@ -74,8 +74,10 @@ class MPDC:
     id = item.get("id")
     if id is None:
       print ("MPDC: setctx by item.  Could not find currentsong's id")
+      return
     print(f"MPDC: setCtx setting ctx for item {id} {ctx}")
-    ctx["id"] = id
+    if ctx is not None:
+      ctx["id"] = id
     self.currentCtx = ctx
 
   def getCtxF(self, file:str):
@@ -130,6 +132,20 @@ class MPDC:
           self.mpd.play()
     except Exception as e:
       print("Error toggling play/pause: "+str(e))
+      self.reconn()
+
+  def stop(self):
+    try:
+      self.mpd.stop()
+    except Exception as e:
+      print("Error stopping MPD: "+str(e))
+      self.reconn()
+
+  def clearQueue(self):
+    try:
+      self.mpd.clear()
+    except Exception as e:
+      print("Error clearing MPD queue: "+str(e))
       self.reconn()
 
   def go(self,i):

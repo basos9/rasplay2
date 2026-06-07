@@ -17,6 +17,7 @@ buttons:
   mid: BOARD37
   set: BOARD38
   rst: BOARD40
+  keymock: false
 
 display:
   type: ssd1306

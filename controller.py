@@ -16,6 +16,7 @@ from transstats import TRA
 from radio import RadioController
 from radioCatalog import RadioCatalog
 import config
+from _base import ControllerBase, UnknownEventException
 
 # from psutil import cpu_percent
 # import psutil
@@ -55,7 +56,8 @@ screens = {
     "clock": ""
 }
 
-class Controller:
+
+class Controller(ControllerBase):
     def __init__(self, mpd: MPDC, disp: disp_oled, sysInfo: SysInfo, version):
         print(f"Controller Init")
         self.screen_lines = disp.getScreenLines()
@@ -99,7 +101,7 @@ class Controller:
         if radioCatalog is None:
             raise ValueError("radioCatalog cannot be None")
         print("Radio Controller initialized with radioCatalog")
-        self.radio = RadioController(self.mpd, self.screen_lines, self.onReturnControl, radioCatalog)
+        self.radio = RadioController(self.mpd, self.screen_lines, self, radioCatalog)
 
     ## Interupts
     #   if source=Button && Button=Status
@@ -111,7 +113,19 @@ class Controller:
     #   if source=Button && Button=Right
     #     MPD::next
     #     
-    def btn_set(self):
+
+    ## EVENT handlers
+    def onEvent(self, event, *args):
+        try:
+            return super().onEvent(event, *args)
+        except UnknownEventException as e:
+            if event == "returnControl":
+                self.onReturnControl(*args)
+            else:
+                #print(f"Unknown event: {event}")
+                raise e
+        
+    def onSet(self):
         action=""
         if (self.current_screenmode != "menu"):
             action="open menu"
@@ -131,7 +145,7 @@ class Controller:
     #   else:
     #     print("EVENT: Btn SET held, on " + self.current_screenmode)
 
-    def btn_rst(self):
+    def onRst(self):
         action=""
         #if (self.current_screenmode == "shutdown"):
         if self.shutDownCount > 0:
@@ -157,12 +171,12 @@ class Controller:
             self.display()
         print(f"EVENT: Btn RST pressed, {action}, on " + self.current_screenmode)
 
-    def btn_rstHeld(self):
+    def onRstHeld(self):
         print(f"EVENT: Btn RST held pressed, init shutdown sequence")
         self.schedShutdownM(self.cmdShutdown)
         self.display()
   
-    def btn_up(self):
+    def onUp(self):
         action=""
         if self.current_screenmode == "menu":
             action="menu nav up"
@@ -181,7 +195,7 @@ class Controller:
             self.display()
         print(f"EVENT: Btn UP pressed, {action}, on " + self.current_screenmode)
 
-    def btn_down(self):
+    def onDown(self):
         action=""
         if self.current_screenmode == "menu":
             action="menu NAV down"
@@ -199,7 +213,7 @@ class Controller:
             self.display()
         print(f"EVENT: Btn DOWN pressed, {action}, on " + self.current_screenmode)
 
-    def btn_mid(self):
+    def onMid(self):
         action=""
         if ("menu" == self.current_screenmode):
             action = "menu NAV "+ self.menuController.get_menu() 
@@ -217,7 +231,7 @@ class Controller:
             self.display()
         print(f"EVENT: Btn MID pressed, {action}, on" + self.current_screenmode)
     
-    def btn_left(self):
+    def onLeft(self):
         if (self.current_screenmode == "menu"):
             action="menu NAV back"
             if not self.menuController.menu_prev():
@@ -242,7 +256,7 @@ class Controller:
             self.display()
         print(f"EVENT: Btn LEFT pressed, {action}, on " + self.current_screenmode)
 
-    def btn_right(self):
+    def onRight(self):
         action=""
         if (self.current_screenmode == "menu"):
             action="menu select"
@@ -261,7 +275,7 @@ class Controller:
             self.display()
         print(f"EVENT: Btn RIGHT pressed, {action}, on " + self.current_screenmode)
 
-    def onReturnControl(self, *args):
+    def onReturnControl(self):
         # did they give us control
         if self.current_screenmode == "radio":
             print(f"onReturnControl on {self.current_screenmode}, going back")
@@ -539,11 +553,11 @@ class Controller:
             elif self.current_screen == "radio":
                 self.lShow( *self.radio.showD() )
             else:
-                raise LogicException('Invalid screen (display) '+self.current_screen)
+                raise LogicException(f'Invalid screen (display {self.current_screen }) '+self.current_screen)
         except LogicException as e:
             raise e
         except Exception as e:
-            print("Exception (display): "+str(e))
+            print(f"Exception (display {self.current_screen }): {str(e)}")
             self.last_error = str(e)
 
     def displayShutdown(self):

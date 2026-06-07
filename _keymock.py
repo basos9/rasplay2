@@ -1,17 +1,17 @@
 ## 
 ## BUTTON
 
-from gpiozero import Button
+#from gpiozero import Button
 import threading
 import sys
 import select
 import time
-
+from controller import ControllerBase
 BTN_BOUNCE_TIME = 0.05
 
 class keymock():
 
-    def __init__(self, state):
+    def __init__(self, state: ControllerBase):
         self.state = state
         self.mock()
 
@@ -28,21 +28,23 @@ class keymock():
     def on_key(self, key):
         """Handle PC keyboard events with callbacks"""
         try:
-            print(f'Mock Key pressed: {key}')
+            #print(f'Mock Key pressed: {key}')
             if key ==  '8':
-                self.state.btn_up()
+                self.state.onEvent("up")
             elif key == '2':
-                self.state.btn_down()
+                self.state.onEvent("down")
             elif key == '4':
-                self.state.btn_left()
+                self.state.onEvent("left")
             elif key == '6':
-                self.state.btn_right()
+                self.state.onEvent("right")
             elif key == '5':
-                self.state.btn_mid()
+                self.state.onEvent("mid")
             elif key  == '0':
-                self.state.btn_set()
+                self.state.onEvent("set")
             elif key == '.':
-                self.state.btn_rst()
+                self.state.onEvent("rst")
+            else:
+                print(f"Unknown key: {key}")
                
         except AttributeError:
             pass

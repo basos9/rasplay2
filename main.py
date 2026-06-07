@@ -61,7 +61,9 @@ except ValueError as e:
 mpd.printDebug()
 print(sysInfo.showInfo())
 
-kKM = keymock(ctrl)
+if BUTTONS.keymock:
+    print("Keymock enabled ...")
+    keymock(ctrl)
 
 ##
 ## PROGRAME
