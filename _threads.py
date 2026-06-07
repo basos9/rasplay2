@@ -1,7 +1,5 @@
 from threading import Thread
 
-class LogicException(Exception):
-    pass
 
 class PropagatingThread(Thread):
     def run(self):

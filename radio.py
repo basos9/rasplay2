@@ -2,7 +2,7 @@
 
 from menu import MenuController
 from mpdc import MPDC
-from _threads import LogicException
+from _base import LogicException
 from radioCatalog import RadioCatalog, RadioCatalogPresets
 from _base import ControllerBase, UnknownEventException
 

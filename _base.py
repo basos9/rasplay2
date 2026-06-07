@@ -1,3 +1,6 @@
+class LogicException(Exception):
+    pass
+
 class UnknownEventException(Exception):
     pass
 

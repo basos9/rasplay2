@@ -4,7 +4,7 @@
 #import threading
 
 import _threads
-from _threads import LogicException
+from _base import LogicException
 
 from menu import MenuController
 from _sysinfo import SysInfo
