@@ -108,9 +108,10 @@ class RadioController(ControllerBase):
         if not self.isRadioPlaying():
             self.eventBus.onEvent("returnControl")
 
-    def close(self):
+    def close(self, stop=True):
         print("Closing radio player, stopping MPD, clearing queue")
-        self.mpdc.stop()
+        if stop:
+         self.mpdc.stop()
         self.mpdc.setCtx(None)
         self.mpdc.clearQueue()
         self.eventBus.onEvent("returnControl")

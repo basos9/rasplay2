@@ -343,6 +343,8 @@ class Controller(ControllerBase):
           self.setScreenMode("main")
           self.schedScreenMain("top", SYSSHOW_FORSECS)
       elif self.menuController.get_menu() == "player":
+          if self.radio.isRadioPlaying:
+                self.radio.close()
           self.setScreenMode("player")
       elif self.menuController.get_menu() == "transmission":
           self.setScreenMode("main")
@@ -406,6 +408,9 @@ class Controller(ControllerBase):
                 #
             elif self.mainScreenFence(diffTime):
                 self.setScreen(self.showScreen)
+            elif self.radio.isRadioPlaying():
+                print(f"main: trigger, show radio player (we returned from a menu maybe)")
+                self.setScreenMode("radio")
             elif self.mainPlayerFence(diffTime):
                 self.setScreen("player")
             elif self.sysinfo.getAvgCpuPct() > SYSDISP_CPU_THRES :

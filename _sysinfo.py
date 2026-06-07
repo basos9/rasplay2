@@ -74,7 +74,10 @@ class sysPyInfo():
     self.avgcpu = RunningAverage(MAVG_SIZELOOPS)
     self.avgnet_rcv = RunningAverage(MAVG_SIZELOOPS)
     self.avgnet_snd = RunningAverage(MAVG_SIZELOOPS)
+    self.avgdisk_read = RunningAverage(MAVG_SIZELOOPS)
+    self.avgdisk_write = RunningAverage(MAVG_SIZELOOPS)
     self.prevNetStats = {}
+    self.prevDiskStats = None
     self.prevTime = 0
 
   def getCurCpuPCt():
@@ -88,6 +91,12 @@ class sysPyInfo():
     la = psutil.getloadavg()
     return f"{la[0]:.1f} ~ {la[1]:.1f}"
   
+  def getMemUsage():
+    mem = psutil.virtual_memory()
+    used_mb = mem.used / (1024 * 1024 * 1024)
+    total_mb = mem.total / (1024 * 1024 * 1024)
+    return f"{mem.percent:.0f}% {used_mb:.2f}GB"
+
   def getNUsers():
      u = psutil.users()
      return f"{len(u):.0f}u"
@@ -113,11 +122,21 @@ class sysPyInfo():
       self.avgnet_rcv.add((netstatis.bytes_recv - prevNetStats.bytes_recv) / (1024 *1024 ) / diffTime)
       self.avgnet_snd.add((netstatis.bytes_sent - prevNetStats.bytes_sent)/ (1024* 1024 ) / diffTime)
 
+    prevDiskStats = self.prevDiskStats
+    diskstats = psutil.disk_io_counters()
+    self.prevDiskStats = copy.deepcopy(diskstats)
+    if diffTime > 0 and prevDiskStats is not None:
+      self.avgdisk_read.add((diskstats.read_bytes - prevDiskStats.read_bytes) / (1024 * 1024) / diffTime)
+      self.avgdisk_write.add((diskstats.write_bytes - prevDiskStats.write_bytes) / (1024 * 1024) / diffTime)
+
   def getAvgCpuPct(self):
      return self.avgcpu.get_avg()
 
+  def getAvgDiskIO(self):
+     return f"{self.avgdisk_read.get_avg():.1f}/{self.avgdisk_write.get_avg():.1f}"
+
   def getAvgNetRXTX(self):
-      return f"{self.avgnet_rcv.get_avg():.01f} / {self.avgnet_snd.get_avg():.1f} MB/s"
+      return f"{self.avgnet_rcv.get_avg():.01f}/{self.avgnet_snd.get_avg():.1f}"
 
   def th_loop(self):
      while True:
@@ -162,15 +181,19 @@ class SysInfo():
     lines=list()
     UPnLOAD = f'{sysPyInfo.getUptime()} {sysPyInfo.getNUsers()}, ld {sysPyInfo.getLoad()}'
     lines.append(UPnLOAD)
-    CPUN = f'CPU: {sysPyInfo.getCurCpuPCt():.0f}% ~ {self.CI.getAvgCpuPct():.0f}%, {sysCmdInfo.getCpuTemp()}'
+    CPUN = f'C: {sysPyInfo.getCurCpuPCt():.0f} ~ {self.CI.getAvgCpuPct():.0f}%, {sysCmdInfo.getCpuTemp()}'
     lines.append(CPUN)
     #lines.append(str(CPU,'utf-8'))
-    MemUsage = f'Mem: {sysCmdInfo.getMemUsage()}'
+    MemUsage = f'M: {sysPyInfo.getMemUsage()}'
     lines.append(MemUsage)
+    netio = self.CI.getAvgNetRXTX()
+    #lines.append(net)
+    diskio = self.CI.getAvgDiskIO()
+    lines.append(f'D: {diskio} N: {netio} MB/s')
+    #lines.append(diskio)
     Disk = f'{sysCmdInfo.getDiskUsage(self.mntreg)}'
     lines.append(Disk)
-    net = self.showNetInfo()
-    lines.append(net)
+
     #lines.append("IPs: " + IP)
 
     return lines
