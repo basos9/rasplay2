@@ -387,7 +387,7 @@ class Controller(ControllerBase):
             print(*args)
             self.lastWallPrint = wallTime
 
-    def handleMain(self, diffTime = 0, wallTime = time.monotonic() ):
+    def handleMain(self, diffTime = 0):
           ## trigger error event
             if self.last_error is not None and self.showErrorFor < 0:
                 self.showErrorFor = ERRSHOW_FORSECS
@@ -558,6 +558,8 @@ class Controller(ControllerBase):
                 self.lShow( self.mpd.showStatus(), dispChanged or self.mpd.statusHasChanged() )
             elif self.current_screen == "stats":
                 self.lShow(self.sysinfo.showInfo(), dispChanged)
+            elif self.current_screen == "top":
+                self.lShow(self.sysinfo.showTopProcesses(), dispChanged)
             elif self.current_screen == "transmission":
                 self.lShow(self.tra.getStats(), dispChanged)
             elif self.current_screen == "radio":

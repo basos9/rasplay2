@@ -151,7 +151,29 @@ class sysPyInfo():
       kb_thread.start()
       print("tracking(): thead started")
 
-
+  def showTopProcesses(self, top_n=4):
+      lines = list()
+      lines.append("TOP PROCESSES")
+      try:
+        processes = []
+        for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+          try:
+            pinfo = proc.as_dict(attrs=['pid', 'name', 'cpu_percent', 'memory_percent'])
+            processes.append(pinfo)
+          except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+        
+        # Sort by CPU percent
+        sorted_by_cpu = sorted(processes, key=lambda x: x['cpu_percent'] or 0, reverse=True)[:top_n]
+        
+        for proc in sorted_by_cpu:
+          name = proc['name'][:12] if proc['name'] else 'unknown'
+          cpu = proc['cpu_percent'] if proc['cpu_percent'] else 0
+          mem = proc['memory_percent'] if proc['memory_percent'] else 0
+          lines.append(f"{name:12} C:{cpu:5.1f}% M:{mem:5.1f}%")
+      except Exception as e:
+        lines.append(f"Error: {str(e)}")
+      return lines
 
 
 # class AvgCPU(RunningAverage):
@@ -197,6 +219,9 @@ class SysInfo():
     #lines.append("IPs: " + IP)
 
     return lines
+  
+  def showTopProcesses(self):
+    return self.CI.showTopProcesses()
 
   def shutDown(self):
     return sysCmdInfo.shutdown()
@@ -206,5 +231,7 @@ class SysInfo():
 
   def restartUPNP(self):
     return sysCmdInfo.restartUPNP()
+
+ 
 
 

@@ -34,6 +34,7 @@ class MPDC:
     except Exception as e:
       print("Reconnecting: MPD not responding: "+str(e))
       try:
+        self.close()
         self.connect()
         return True
       except Exception as e:
@@ -85,12 +86,15 @@ class MPDC:
     if len(items) > 0:
       item = items[0]
     else:
-      item = None
+      return {}
     return self.getCtx(item)
 
   def getCtx(self, item=None):
     if item is None:
       item = self.mpd.currentsong()
+    if item is None:
+      print("MPDC: getCtx could not get currentsong")
+      return {}
     id = item.get("id")
     if id is None:
       print ("MPDC: getCtx Could not find currentsong's id")
@@ -282,4 +286,3 @@ class MPDC:
 
   def close(self):
     self.mpd.close()
-    self.mpd.disconnect()

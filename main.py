@@ -14,7 +14,7 @@ from controller import Controller
 from _keymock import keymock
 from radioCatalog import RadioCatalogPresets
 
-version = "2.3.0"
+version = "2.3.1"
 
 ## CONFIG
 ##
