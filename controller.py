@@ -36,11 +36,14 @@ CP = 0.5 #clock pulse
 menudef = {
     "radio": "Radio",
     "player": "Player",
-    "stats": "System Stats",
-    "transmission": "Transmission",
-    "System": { "upnpres": "UPNP Restart",
-               "reboot": "Reboot", 
-               "shutdown": "Shutdown" },
+
+    "System": { 
+        "stats": "System Stats",
+        "top": "Top Processes",
+        "transmission": "Transmission",
+        "upnpres": "UPNP Restart",
+        "reboot": "Reboot", 
+        "shutdown": "Shutdown" },
     "clock": "Clock"
 }
 #"top": "Top Processes"
@@ -343,7 +346,7 @@ class Controller(ControllerBase):
           self.setScreenMode("main")
           self.schedScreenMain("top", SYSSHOW_FORSECS)
       elif self.menuController.get_menu() == "player":
-          if self.radio.isRadioPlaying:
+          if self.radio.isRadioPlaying():
                 self.radio.close()
           self.setScreenMode("player")
       elif self.menuController.get_menu() == "transmission":
