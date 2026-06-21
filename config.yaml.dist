@@ -16,7 +16,6 @@ buttons:  #use BOARDxx naming for physical pinout from https://gpiozero.readthed
 
 display:
   type: ssd1306
-  screen_lines: 4
 
 radio:
   presets:

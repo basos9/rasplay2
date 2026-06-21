@@ -14,7 +14,7 @@ from controller import Controller
 from _keymock import keymock
 from radioCatalog import RadioCatalogPresets
 
-version = "2.3.3"
+version = "2.4.0"
 
 ## CONFIG
 ##
@@ -25,7 +25,7 @@ from config import MPD, TRANS, BUTTONS, SYS, DISP, RADIO
 ##
 
 if DISP.type == "ssd1306":
-    disp = disp_ssd1306(DISP.screen_lines)
+    disp = disp_ssd1306()
 else:
     raise ValueError(f"Unsupported display type {DISP.type}")
 
