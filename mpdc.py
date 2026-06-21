@@ -38,7 +38,7 @@ class MPDC:
         self.connect()
         return True
       except Exception as e:
-        print("Error reconnecting to MPD: "+str(e))
+        #raise Exception("Error reconnecting to MPD: "+str(e))
         return False
     return True
 
@@ -279,10 +279,13 @@ class MPDC:
       current = self.mpd.currentsong()
       playlist = self.mpd.playlistid()
       print("MPD: "+str(status)+"\n CUR:"+str(current))
-      print(" PLI:"+str(playlist))
+      #print(" PLI:"+str(playlist))
       #print("TAG "+str(self.mpd.tagtypes()))
-      print(self.mpd.playlistfind("file","willnotfind"))
+      #print(self.mpd.playlistfind("file","willnotfind"))
 
 
   def close(self):
-    self.mpd.close()
+    try:
+      self.mpd.close()
+    except Exception as e:
+      print("Error closing MPD connection: "+str(e))
