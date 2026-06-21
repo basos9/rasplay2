@@ -14,7 +14,7 @@ from controller import Controller
 from _keymock import keymock
 from radioCatalog import RadioCatalogPresets
 
-version = "2.3.1"
+version = "2.3.3"
 
 ## CONFIG
 ##
@@ -30,7 +30,7 @@ else:
     raise ValueError(f"Unsupported display type {DISP.type}")
 
 mpd = MPDC(MPD.host, MPD.port, MPD.password)
-sysInfo = SysInfo(SYS.mntreg)
+sysInfo = SysInfo(SYS.mntreg, SYS.dht_pin)
 
 ctrl = Controller(mpd, disp, sysInfo, version)
 
@@ -43,6 +43,7 @@ bat = buttonsCtrl(
   bMid=BUTTONS.mid,
   bSet=BUTTONS.btn_set,
   bRst=BUTTONS.rst,
+  debounce=BUTTONS.debounce_ms/1000 if BUTTONS.debounce_ms else None
 )
 
 try:
