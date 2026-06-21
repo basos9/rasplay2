@@ -4,10 +4,11 @@ import copy
 import time
 import threading
 from _maths import RunningAverage
-
+import board
+import adafruit_dht
 MNTREG = '^/'
 MAVG_SIZELOOPS = 20
-TRACKSLEEP = 1
+TRACKSLEEP = 5
 
 class sysCmdInfo():
 
@@ -51,7 +52,7 @@ class sysCmdInfo():
     return Disk
   
   def getCpuTemp():
-    cmd = """vcgencmd measure_temp | awk '{gsub(/temp=/,""); printf "te %s",$0;}'"""
+    cmd = """vcgencmd measure_temp | awk '{gsub(/temp=/,""); printf "%s",$0;}'"""
     Temp = subprocess.check_output(cmd, shell = True, text=True )
     return Temp
   
@@ -95,7 +96,7 @@ class sysPyInfo():
     mem = psutil.virtual_memory()
     used_mb = mem.used / (1024 * 1024 * 1024)
     total_mb = mem.total / (1024 * 1024 * 1024)
-    return f"{mem.percent:.0f}% {used_mb:.2f}GB"
+    return f"{mem.percent:.0f}% {used_mb:.1f}G"
 
   def getNUsers():
      u = psutil.users()
@@ -133,10 +134,10 @@ class sysPyInfo():
      return self.avgcpu.get_avg()
 
   def getAvgDiskIO(self):
-     return f"{self.avgdisk_read.get_avg():.1f}/{self.avgdisk_write.get_avg():.1f}"
+     return f"{self.avgdisk_read.get_avg():.1f} {self.avgdisk_write.get_avg():.1f}"
 
   def getAvgNetRXTX(self):
-      return f"{self.avgnet_rcv.get_avg():.01f}/{self.avgnet_snd.get_avg():.1f}"
+      return f"{self.avgnet_rcv.get_avg():.01f} {self.avgnet_snd.get_avg():.1f}"
 
   def th_loop(self):
      while True:
@@ -153,7 +154,7 @@ class sysPyInfo():
 
   def showTopProcesses(self, top_n=4):
       lines = list()
-      lines.append("TOP PROCESSES")
+      #lines.append("TOP PROCESSES")
       try:
         processes = []
         for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
@@ -170,11 +171,10 @@ class sysPyInfo():
           name = proc['name'][:12] if proc['name'] else 'unknown'
           cpu = proc['cpu_percent'] if proc['cpu_percent'] else 0
           mem = proc['memory_percent'] if proc['memory_percent'] else 0
-          lines.append(f"{name:12} C:{cpu:5.1f}% M:{mem:5.1f}%")
+          lines.append(f"{name:12} {cpu:4.1f}% {mem:4.1f}%")
       except Exception as e:
         lines.append(f"Error: {str(e)}")
       return lines
-
 
 # class AvgCPU(RunningAverage):
 #    def track(self):
@@ -183,35 +183,71 @@ class sysPyInfo():
 ## INIT
 
 class SysInfo():
-  def  __init__(self, mntreg = MNTREG):
+  def  __init__(self, mntreg = MNTREG, dht_pin = None):
     print(f"Sysinfo init mntreg {mntreg}")
     self.CM = sysCmdInfo()
     self.CI = sysPyInfo()
     self.CI.trackingStart()
     self.mntreg = mntreg
+    self.sensor = None
+    if dht_pin is not None:
 
+      pin = getattr(board, dht_pin)
+      print(f"Sysinfo init temp sensor with pin {dht_pin} {pin}")
+      self.sensor = adafruit_dht.DHT22(pin)
+ 
   def getAvgCpuPct(self):
       return self.CI.getAvgCpuPct()
 
-  def showNetInfo(self):
-      return "Net R/T: " + self.CI.getAvgNetRXTX()
+  # def showNetInfo(self):
+  #     return "Net R/T: " + self.CI.getAvgNetRXTX()
 
   def track(self,diffTime):
     self.CI.track(diffTime)
+
+  def getAmbientTempHumid(self):
+    if self.sensor is None:
+      return None, None
+
+    #try:
+    #import adafruit_dht
+
+    try:
+      temperature = self.sensor.temperature
+      humidity = self.sensor.humidity
+      if temperature is not None and humidity is not None:
+        return temperature, humidity
+      #except RuntimeError:
+      #  _time.sleep(2)
+    except Exception:
+      print("Failed to retrieve data from humidity sensor")
+      return None, None
+    #except Exception:
+    #  raise Exception("Failed to import lib adafruit_dht")
+    
+  def showAmbientTempHumid(self):
+    temperature, humidity = self.getAmbientTempHumid()
+    if temperature is not None and humidity is not None:
+        return f"{temperature:.1f}C {humidity:.1f}%"
+    else:
+        return ""
 
   def showInfo(self):
     lines=list()
     UPnLOAD = f'{sysPyInfo.getUptime()} {sysPyInfo.getNUsers()}, ld {sysPyInfo.getLoad()}'
     lines.append(UPnLOAD)
-    CPUN = f'C: {sysPyInfo.getCurCpuPCt():.0f} ~ {self.CI.getAvgCpuPct():.0f}%, {sysCmdInfo.getCpuTemp()}'
+    CPUN = f'C {sysPyInfo.getCurCpuPCt():.0f} ~ {self.CI.getAvgCpuPct():.0f}%, {sysCmdInfo.getCpuTemp()}'
     lines.append(CPUN)
     #lines.append(str(CPU,'utf-8'))
-    MemUsage = f'M: {sysPyInfo.getMemUsage()}'
+    diskio = self.CI.getAvgDiskIO()
+    th=""
+    if self.sensor is not None:
+        th=f", th {self.showAmbientTempHumid()}"
+    MemUsage = f'M {sysPyInfo.getMemUsage()}{th}'
     lines.append(MemUsage)
     netio = self.CI.getAvgNetRXTX()
     #lines.append(net)
-    diskio = self.CI.getAvgDiskIO()
-    lines.append(f'D: {diskio} N: {netio} MB/s')
+    lines.append(f'D {diskio} N {netio} M/s')
     #lines.append(diskio)
     Disk = f'{sysCmdInfo.getDiskUsage(self.mntreg)}'
     lines.append(Disk)
