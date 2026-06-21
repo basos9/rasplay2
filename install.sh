@@ -9,12 +9,25 @@ install config.yaml.dist /usr/local/etc/rasplay2/config.yaml.dist
 install config.yaml.dist /usr/local/etc/rasplay2/config.yaml
 python3 -m venv /usr/local/share/rasplay2/venv
 /usr/local/share/rasplay2/venv/bin/python3 -m pip install -r /usr/local/share/rasplay2/requirements.txt
-install rasplay2.service /etc/systemd/system/
+install -m 644 rasplay2.service /etc/systemd/system/
 if getent passwd rasplay2 >/dev/null; then
     #echo "User rasplay2 already exists"
     usermod -s /usr/sbin/nologin rasplay2
 else
     useradd -r -s /usr/sbin/nologin rasplay2
 fi
+if getent group i2c >/dev/null; then
+    #echo "Group i2c already exists"
+    usermod -a -G i2c rasplay2
+fi
+if getent group gpio >/dev/null; then
+    #echo "Group gpio already exists"
+    usermod -a -G gpio rasplay2
+fi
+cat <<EOL > /etc/sudoers.d/rasplay2
+# Allow rasplay2 to run shutdown and reboot without password
+rasplay2 ALL=(ALL) NOPASSWD: /sbin/shutdown, /sbin/reboot, /sbin/systemctl ^restart (upmpdcli|mpd)$
+EOL
+
 systemctl daemon-reload
 systemctl status rasplay2.service

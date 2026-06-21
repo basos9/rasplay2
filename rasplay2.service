@@ -11,6 +11,8 @@ Environment=CONFIG_FILE=/usr/local/etc/rasplay2/config.yaml
 ExecStart=/usr/local/share/rasplay2/venv/bin/python3 /usr/local/share/rasplay2/main.py
 Restart=on-failure
 RestartSec=5
+RestartSteps=6
+RestartMaxDelaySec=90
 
 [Install]
 WantedBy=basic.target

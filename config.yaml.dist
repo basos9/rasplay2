@@ -3,13 +3,7 @@ mpd:
   port: 6600
   password: 
 
-transmission:
-  host: localhost
-  port: 9091
-  user: transmission
-  password: 
-
-buttons:
+buttons:  #use BOARDxx naming for physical pinout from https://gpiozero.readthedocs.io/en/stable/recipes.html#pin-numbering
   up: BOARD36
   down: BOARD31
   left: BOARD32
@@ -17,6 +11,7 @@ buttons:
   mid: BOARD37
   set: BOARD38
   rst: BOARD40
+  debouncems: 100
   keymock: false
 
 display:
@@ -31,6 +26,8 @@ radio:
 
 sys:
   mntreg: "^/"
+  # use Dn naming for GPIOn from https://learn.adafruit.com/arduino-to-circuitpython/digital-in-out
+  dht_pin: 
 
 transmission:
   host: localhost

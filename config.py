@@ -49,6 +49,7 @@ BUTTONS = SimpleNamespace(
 	btn_set=btn_cfg.get("set", "BOARD38"),
 	rst=btn_cfg.get("rst", "BOARD40"),
 	keymock=btn_cfg.get("keymock", False),
+	debounce_ms=btn_cfg.get("debouncems", 100)
 )
 
 disp_cfg = _cfg.get("display", {})
@@ -60,7 +61,8 @@ DISP = SimpleNamespace(
 # Mounts regex for SysInfo
 sys_cfg = _cfg.get("sys", {})
 SYS = SimpleNamespace(
-    mntreg=sys_cfg.get("mntreg", "^/")
+    mntreg=sys_cfg.get("mntreg", "^/"),
+	dht_pin=sys_cfg.get("dht_pin", None)
 )
 
 

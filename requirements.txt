@@ -8,3 +8,4 @@ psutil
 RPi.GPIO
 PyYAML
 pyradios
+adafruit-circuitpython-dht
