@@ -30,7 +30,11 @@ else:
     raise ValueError(f"Unsupported display type {DISP.type}")
 
 mpd = MPDC(MPD.host, MPD.port, MPD.password)
+#mpd.printDebug()
+
 sysInfo = SysInfo(SYS.mntreg, SYS.dht_pin)
+print(sysInfo.showInfo())
+
 
 ctrl = Controller(mpd, disp, sysInfo, version)
 
@@ -59,8 +63,8 @@ except ValueError as e:
     print(f"Error initializing radio, skipping: {e}")
     radioCatalogPresets = None
 
-mpd.printDebug()
-print(sysInfo.showInfo())
+
+
 
 if BUTTONS.keymock:
     print("Keymock enabled ...")

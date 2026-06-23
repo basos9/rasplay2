@@ -86,11 +86,11 @@ class RadioController(ControllerBase):
             if not self.menuController.menu_prev():
                 #self.setScreenMode("_back")
                 action+=" exit"
-                self.close()
+                self.self_close()
             #self.display()
         elif self.current_screenmode == "player" :
              action="player exiting"
-             self.close()
+             self.self_close()
         #     self.setScreenMode("menu")
         #     self.showPlayerIn = SHOWPLAYER_INSECS *2
         #     #self.display()
@@ -106,15 +106,20 @@ class RadioController(ControllerBase):
             if self.showPlayerIn < 0 and self.current_screenmode == "menu":
                 self.setScreenMode("player")
         if not self.isRadioPlaying():
+            print("Radio not playing, returning control")
             self.eventBus.onEvent("returnControl")
+
+    def self_close(self, stop=True):
+        print("Closing radio player, returning control")
+        self.close(stop)
+        self.eventBus.onEvent("returnControl")
 
     def close(self, stop=True):
         print("Closing radio player, stopping MPD, clearing queue")
         if stop:
-         self.mpdc.stop()
+          self.mpdc.stop()
         self.mpdc.setCtx(None)
         self.mpdc.clearQueue()
-        self.eventBus.onEvent("returnControl")
 
     def selectStation(self, schedPlayer = True):
         sta = self.menuController.get_menu()
@@ -122,7 +127,7 @@ class RadioController(ControllerBase):
             print(f"Select station {sta}, SchedDhowPlayer {schedPlayer}")
             ent = self.memory[sta]
             url = ent.get("url")
-            name = f"RADIO: {sta}"
+            name = f"RADIO {sta}"
             if self.mpdc.isPlaying() and self.mpdc.getCurrent("file") == url and self.mpdc.getCtxF(url).get("slug") == name:
                 print(f"Already playing station {name}")
             else:

@@ -278,7 +278,7 @@ class MPDC:
       status = self.getStatus(True)
       current = self.mpd.currentsong()
       playlist = self.mpd.playlistid()
-      print("MPD: "+str(status)+"\n CUR:"+str(current))
+      print("MPD info: "+str(status)+"\nMPD CUR:"+str(current))
       #print(" PLI:"+str(playlist))
       #print("TAG "+str(self.mpd.tagtypes()))
       #print(self.mpd.playlistfind("file","willnotfind"))
