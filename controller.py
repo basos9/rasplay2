@@ -66,7 +66,7 @@ class Controller(ControllerBase):
         self.screen_lines = disp.getScreenLines()
         self.menuController = MenuController(menudef, self.screen_lines)
         self.mpd = mpd
-        self.disp = disp
+        #self.disp = disp
         self.lShow = disp.lShow
         self.radio = None
         self.version = version
@@ -76,6 +76,7 @@ class Controller(ControllerBase):
         self.current_screen = "main"
         self.current_screenmode = "main"
         self.prev_screemmode = "main"
+        self.prev_screen = ""
         self.current_controller = None
         self.shutDownCount = -1
         self.shutDownCmd = None
@@ -88,7 +89,6 @@ class Controller(ControllerBase):
         self.blinkTimeDot = 1
         self.showGreetFor = 10
         self.showClockFor = SHOWCLOCK_FORSECS
-        self.prev_screen = ""
         self.lastWallPrint = -1
 
     def fin(self):
@@ -163,15 +163,19 @@ class Controller(ControllerBase):
         elif self.current_screenmode == "radio":
             action="exiting radio player"
             self.radio.close()
-            #self.setScreenMode("main")
+            self.setScreenMode("main")
             self.display()
         else:
             action="show main"
             if (self.current_screenmode == "menu"):
                 self.menuController.menu_reset()
-            self.setScreenMode("main")
-            #self.resetMain()
-            self.handleMain()
+            if self.radio.isRadioPlaying():
+                actio="show radio"
+                print(f"main: trigger, show radio player (we returned from menu)")
+                self.setScreenMode("radio")
+            else:
+                self.setScreenMode("main")
+                self.handleMain()
             self.display()
         print(f"EVENT: Btn RST pressed, {action}, on " + self.current_screenmode)
 
@@ -240,6 +244,7 @@ class Controller(ControllerBase):
             action="menu NAV back"
             if not self.menuController.menu_prev():
                 self.setScreenMode("main")
+                self.handleMain()
             self.display()
         elif self.current_screenmode == "player" or self.current_screenmode == "main":
             action="MPD prev"
@@ -251,7 +256,6 @@ class Controller(ControllerBase):
         elif self.current_screenmode == "stats" or self.current_screenmode == "transmission":
             action="show main"
             self.setScreenMode("main")
-            #self.resetMain()
             self.handleMain()
             self.display()
         elif (self.current_screenmode == "radio"):
@@ -284,12 +288,12 @@ class Controller(ControllerBase):
         if self.current_screenmode == "radio":
             print(f"onReturnControl on {self.current_screenmode}, going back")
             self.setScreenMode("main")
+            # NOTE dont handleMain() here to avoid complex interactions
 
     def schedShutdownM(self, shutdownCmd ):
         print("Scheduling shutdown in " + str(SHUTDOWN_DELAY) + " seconds...")
         #if self.shutDownCount < 0:
         self.shutDownCount = SHUTDOWN_DELAY
-        self.shutDownCmd = shutdownCmd
         self.setScreenMode("shutdown")
     
     def cancelShutdownM(self):
@@ -297,6 +301,7 @@ class Controller(ControllerBase):
         self.shutDownCount = -1
         self.shutDownCmd = None
         self.setScreenMode("main")
+        self.handleMain()
         
     def schedScreenMain(self, screen, showForSecs):
         #if self.showScreenFor < 0:
@@ -310,15 +315,23 @@ class Controller(ControllerBase):
         #   self.resetScreen()
   
     def setScreenMode(self, screen):
-        print(f"Screen mode change: {self.current_screenmode} -> {screen}")
+        
         screen = self.setScreen(screen)
+        if self.current_screenmode == screen:
+            #print(f"Screen mode unchanged: {self.current_screenmode} -> {screen}")
+            return
+        print(f"Screen mode change: {self.current_screenmode} -> {screen}")
         self.prev_screemmode = self.current_screenmode
         self.current_screenmode = screen
         if screen == "main":
             self.resetMain()
 
+    ## TODO check if thread safe
     def setScreen(self, screen):
         if screen in screens:
+            if screen == self.current_screen:
+                return self.current_screen
+            print(f"Screen change: {self.current_screen} -> {screen}")
             if screen == "transmission" and self.tra is None:
                 print("No transmission client set, cannot show transmission stats")
                 self.last_error = "* Transmission Unavailable"
@@ -333,7 +346,10 @@ class Controller(ControllerBase):
             raise Exception("Sceen not defined (set) "+ screen)
         return self.current_screen
     
+    ## TODO check if thread safe
     def resetScreen(self):
+        if self.current_screen != self.current_screenmode:
+            print(f"resetScreen: {self.current_screen} -> {self.current_screenmode}")
         self.current_screen = self.current_screenmode
 
     def menuNav(self):
@@ -342,16 +358,19 @@ class Controller(ControllerBase):
       elif self.menuController.get_menu() == "stats":
           self.setScreenMode("main")
           self.schedScreenMain("stats", SYSSHOW_FORSECS)
+          self.handleMain()
       elif self.menuController.get_menu() == "top":
           self.setScreenMode("main")
           self.schedScreenMain("top", SYSSHOW_FORSECS)
+          self.handleMain()
       elif self.menuController.get_menu() == "player":
           if self.radio.isRadioPlaying():
-                self.radio.close()
+            self.radio.close() 
           self.setScreenMode("player")
       elif self.menuController.get_menu() == "transmission":
           self.setScreenMode("main")
           self.schedScreenMain("transmission", SYSSHOW_FORSECS)
+          self.handleMain()
       elif self.menuController.get_menu() == "reboot":
           self.schedShutdownM(self.cmdReboot)
       elif self.menuController.get_menu() == "shutdown":
@@ -359,7 +378,7 @@ class Controller(ControllerBase):
       elif self.menuController.get_menu() == "clock":
           self.setScreenMode("clock")
       elif self.menuController.get_menu() == "upnpres":
-          self.setScreenMode("main")
+          #self.setScreenMode("main")
           self.cmdRestartUPNP()
       elif self.menuController.get_menu() == "radio":
           self.setScreenMode("radio")
@@ -391,38 +410,37 @@ class Controller(ControllerBase):
             self.lastWallPrint = wallTime
 
     def handleMain(self, diffTime = 0):
-          ## trigger error event
-            if self.last_error is not None and self.showErrorFor < 0:
-                self.showErrorFor = ERRSHOW_FORSECS
-                self.mprint(True, f"main: trigger show error for {self.showErrorFor:.0f} secs")
-                self.setScreen("main")
-            elif self.showErrorFor > 0:
-                self.showErrorFor = self.showErrorFor - diffTime
-                if self.showErrorFor < 0:
-                    self.last_error = None
-                    self.showErrorFor = -1
-                    self.resetScreen()
-                else:
-                  self.mprint(False, f"main: show error for {self.showErrorFor:.0f} more secs")
-                  self.setScreen("main")
-            elif self.showGreetFor > 0:
-                self.showGreetFor = self.showGreetFor - diffTime
-                self.mprint(self.prev_screen != "main", f"main: show gret for {self.showGreetFor:.0f} more secs")
-                #
-            elif self.mainScreenFence(diffTime):
-                self.setScreen(self.showScreen)
-            elif self.radio.isRadioPlaying():
-                print(f"main: trigger, show radio player (we returned from a menu maybe)")
-                self.setScreenMode("radio")
-            elif self.mainPlayerFence(diffTime):
-                self.setScreen("player")
-            elif self.sysinfo.getAvgCpuPct() > SYSDISP_CPU_THRES :
-                print(f"main: trigger, show sys stats cpu avg { self.sysinfo.getAvgCpuPct()}")
-                self.setScreen("stats")
-            elif self.mainClockFence(diffTime):
-                self.setScreen("clock")
-            else:
+        if self.current_screenmode != "main":
+            return
+        ## trigger error event
+        if self.last_error is not None and self.showErrorFor < 0:
+            self.showErrorFor = ERRSHOW_FORSECS
+            self.mprint(True, f"main: trigger show error for {self.showErrorFor:.0f} secs")
+            self.setScreen("main")
+        elif self.showErrorFor > 0:
+            self.showErrorFor = self.showErrorFor - diffTime
+            if self.showErrorFor < 0:
+                self.last_error = None
+                self.showErrorFor = -1
                 self.resetScreen()
+            else:
+                self.mprint(False, f"main: show error for {self.showErrorFor:.0f} more secs")
+                self.setScreen("main")
+        elif self.showGreetFor > 0:
+            self.showGreetFor = self.showGreetFor - diffTime
+            self.mprint(self.prev_screen != "main", f"main: show gret for {self.showGreetFor:.0f} more secs")
+            #
+        elif self.mainScreenFence(diffTime):
+            self.setScreen(self.showScreen)
+        elif self.mainPlayerFence(diffTime):
+            self.setScreen("player")
+        elif self.sysinfo.getAvgCpuPct() > SYSDISP_CPU_THRES :
+            print(f"main: trigger, show sys stats cpu avg { self.sysinfo.getAvgCpuPct()}")
+            self.setScreen("stats")
+        elif self.mainClockFence(diffTime):
+            self.setScreen("clock")
+        else:
+            self.resetScreen()
 
     def mainScreenFence(self, diffTime):
         if self.showScreenFor > 0:
@@ -474,7 +492,8 @@ class Controller(ControllerBase):
                 return True
         return False
 
-    def clock(self):
+    ## NOTE: This is called from thread
+    def th_clock(self):
         diffTime= self.diffTime()
         #print(f'Tick passed {diffTime}')
         if (self.shutDownCount > 0):
@@ -496,11 +515,13 @@ class Controller(ControllerBase):
             self.resetScreen()
         self.display()
         #self.resetScreen()
-        
+
+
+    ## CONTROLLER thread loop 
     def th_loop(self):
         while True:
             start = time.monotonic()
-            self.clock()
+            self.th_clock()
             elapsed = time.monotonic() - start
             sleep = CP - elapsed
             if sleep < 0:
@@ -543,7 +564,7 @@ class Controller(ControllerBase):
         self.blinkTimeDot = 0 if self.blinkTimeDot == 1 else 1
         return lines
 
-
+    ## TODO check if thread safe
     def display(self):
         try:
             prevScreen = self.prev_screen
@@ -558,7 +579,8 @@ class Controller(ControllerBase):
             elif self.current_screen == "menu":
                 self.lShow( self.menuController.show_menu(), True)
             elif self.current_screen == "player":
-                self.lShow( self.mpd.showStatus(), dispChanged or self.mpd.statusHasChanged() )
+                st = self.mpd.showStatus()
+                self.lShow( st, True or dispChanged or self.mpd.statusHasChanged(), slide=True, slideStamp=st[0] )
             elif self.current_screen == "stats":
                 self.lShow(self.sysinfo.showInfo(), dispChanged)
             elif self.current_screen == "top":
@@ -566,7 +588,8 @@ class Controller(ControllerBase):
             elif self.current_screen == "transmission":
                 self.lShow(self.tra.getStats(), dispChanged)
             elif self.current_screen == "radio":
-                self.lShow( *self.radio.showD() )
+                st = self.radio.showD()
+                self.lShow( *st, slide=True, slideStamp = st[0][1])
             else:
                 raise LogicException(f'Invalid screen (display {self.current_screen }) '+self.current_screen)
         except LogicException as e:

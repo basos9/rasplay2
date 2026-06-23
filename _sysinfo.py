@@ -150,7 +150,7 @@ class sysPyInfo():
   def trackingStart(self):
       kb_thread = threading.Thread(target=self.th_loop, daemon=True)
       kb_thread.start()
-      print("tracking(): thead started")
+      print("sysinfo, tracking(): thead started")
 
   def showTopProcesses(self, top_n=4):
       lines = list()
@@ -190,10 +190,10 @@ class SysInfo():
     self.CI.trackingStart()
     self.mntreg = mntreg
     self.sensor = None
+    self.prevTemp = None
     if dht_pin is not None:
-
       pin = getattr(board, dht_pin)
-      print(f"Sysinfo init temp sensor with pin {dht_pin} {pin}")
+      print(f"Sysinfo init temp sensor with pin {dht_pin} ({pin})")
       self.sensor = adafruit_dht.DHT22(pin)
  
   def getAvgCpuPct(self):
@@ -208,26 +208,30 @@ class SysInfo():
   def getAmbientTempHumid(self):
     if self.sensor is None:
       return None, None
-
     #try:
     #import adafruit_dht
-
+    now = time.monotonic()
+    if self.prevTemp is None:
+       self.prevTemp = { "temperature": None, "humidity": None, "time": now}
+    elif self.prevTemp["time"] is not None and (now - self.prevTemp["time"]) < 2:
+        return self.prevTemp["temperature"], self.prevTemp["humidity"]
     try:
       temperature = self.sensor.temperature
       humidity = self.sensor.humidity
-      if temperature is not None and humidity is not None:
-        return temperature, humidity
-      #except RuntimeError:
-      #  _time.sleep(2)
+      self.prevTemp = { "temperature": temperature, "humidity": humidity, "time": now}
+    except RuntimeError:
+        print("Failed to retrieve data from humidity sensor. Returing previous")
+        #time.sleep(2)
     except Exception:
       print("Failed to retrieve data from humidity sensor")
       return None, None
+    return self.prevTemp["temperature"], self.prevTemp["humidity"]
     #except Exception:
     #  raise Exception("Failed to import lib adafruit_dht")
     
   def showAmbientTempHumid(self):
     temperature, humidity = self.getAmbientTempHumid()
-    if temperature is not None and humidity is not None:
+    if temperature is not None or humidity is not None:
         return f"{temperature:.1f}C {humidity:.1f}%"
     else:
         return ""
