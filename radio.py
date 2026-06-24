@@ -8,6 +8,7 @@ from _base import ControllerBase, UnknownEventException
 
 
 SHOWPLAYER_INSECS = 5
+SELECT_DELAY = 1
 
 class RadioController(ControllerBase):
     ## memory { "station name": {"url": "stream url", ... }
@@ -21,6 +22,7 @@ class RadioController(ControllerBase):
         self.current_screenmode = "menu"
         self.prev_screenmode = ""
         self.showPlayerIn = -1
+        self.selectStationIn = -1
     
     def setScreenMode(self, mode):
         self.current_screenmode = mode
@@ -45,7 +47,7 @@ class RadioController(ControllerBase):
             action = "menu NAV up"
             self.setScreenMode("menu")
             self.menuController.menu_up()
-            self.selectStation()
+            self.schedSelectStation()
         elif self.current_screenmode == "player" :
             action = "vol down"
             self.mpdc.tunevol(1)
@@ -57,7 +59,7 @@ class RadioController(ControllerBase):
             action = "menu NAV down"
             self.setScreenMode("menu")
             self.menuController.menu_down()
-            self.selectStation()
+            self.schedSelectStation()
         elif self.current_screenmode == "player" :
             action = "vol down"
             self.mpdc.tunevol(-1)
@@ -101,13 +103,17 @@ class RadioController(ControllerBase):
         return action
 
     def clock(self, diffTime):
+        if not self.isRadioPlaying():
+            print("Radio not playing, returning control")
+            self.eventBus.onEvent("returnControl")
         if self.showPlayerIn > 0:
             self.showPlayerIn = self.showPlayerIn - diffTime
             if self.showPlayerIn < 0 and self.current_screenmode == "menu":
                 self.setScreenMode("player")
-        if not self.isRadioPlaying():
-            print("Radio not playing, returning control")
-            self.eventBus.onEvent("returnControl")
+        if self.selectStationIn > 0:
+            self.selectStationIn = self.selectStationIn - diffTime
+            if self.selectStationIn < 0:
+                self.selectStation()
 
     def self_close(self, stop=True):
         print("Closing radio player, returning control")
@@ -121,7 +127,12 @@ class RadioController(ControllerBase):
         self.mpdc.setCtx(None)
         self.mpdc.clearQueue()
 
+    def schedSelectStation(self):
+        print(f"Schedule Select station")
+        self.selectStationIn = SELECT_DELAY
+    
     def selectStation(self, schedPlayer = True):
+        self.selectStationIn = -1
         sta = self.menuController.get_menu()
         if sta in self.memory:
             print(f"Select station {sta}, SchedDhowPlayer {schedPlayer}")
