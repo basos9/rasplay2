@@ -12,6 +12,7 @@ buttons:  #use BOARDxx naming for physical pinout from https://gpiozero.readthed
   set: BOARD38
   rst: BOARD40
   debouncems: 100
+  # debugging
   keymock: false
 
 display:
@@ -25,9 +26,10 @@ radio:
 
 sys:
   mntreg: "^/"
-  # use Dn naming for GPIOn from https://learn.adafruit.com/arduino-to-circuitpython/digital-in-out
-  dht_pin: 
+  # Optinal, EXPERIMENTAL, use Dn naming for GPIOn from https://learn.adafruit.com/arduino-to-circuitpython/digital-in-out
+  # dht_pin: 
 
+# Optional transmission config
 transmission:
   host: localhost
   port: 9091
