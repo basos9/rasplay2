@@ -131,6 +131,7 @@ class Controller(ControllerBase):
         
     def onSet(self):
         action=""
+        screenmode = self.current_screenmode
         if (self.current_screenmode != "menu"):
             action="open menu"
             self.setScreenMode("menu")
@@ -140,7 +141,7 @@ class Controller(ControllerBase):
             action="close menu"
             self.setScreenMode(self.prev_screemmode)
             self.display()
-        print(f"EVENT: Btn SET pressed, {action}, on " + self.current_screenmode)
+        print(f"EVENT: Btn SET pressed, {action}, on {screenmode}")
     # def btn_setHeld(self):
     #   if self.current_screenmode == "main" or self.current_screenmode == "menu":
     #     print("EVENT: Btn SET held, toggle sys stats, on "+ self.current_screenmode)
@@ -151,6 +152,7 @@ class Controller(ControllerBase):
 
     def onRst(self):
         action=""
+        screenmode = self.current_screenmode
         #if (self.current_screenmode == "shutdown"):
         if self.shutDownCount > 0:
             action="cancel shutdown"
@@ -165,19 +167,21 @@ class Controller(ControllerBase):
             self.radio.close()
             self.setScreenMode("main")
             self.display()
-        else:
+        elif self.radio.isRadioPlaying():
+            action="show radio"
+            print(f"main: trigger, show radio player (we returned from menu)")
+            self.setScreenMode("radio")
+        elif (self.current_screenmode == "menu"):
+            self.menuController.menu_reset()
             action="show main"
-            if (self.current_screenmode == "menu"):
-                self.menuController.menu_reset()
-            if self.radio.isRadioPlaying():
-                actio="show radio"
-                print(f"main: trigger, show radio player (we returned from menu)")
-                self.setScreenMode("radio")
-            else:
-                self.setScreenMode("main")
-                self.handleMain()
-            self.display()
-        print(f"EVENT: Btn RST pressed, {action}, on " + self.current_screenmode)
+            self.setScreenMode("main")
+            self.handleMain()
+            #action="show main"
+        else:
+            action="show radio"
+            self.setScreenMode("radio")
+            self.radio.onEvent("open")
+        print(f"EVENT: Btn RST pressed, {action}, on " + screenmode)
 
     def onRstHeld(self):
         print(f"EVENT: Btn RST held pressed, init shutdown sequence")
@@ -186,6 +190,7 @@ class Controller(ControllerBase):
   
     def onUp(self):
         action=""
+        screenmode = self.current_screenmode
         if self.current_screenmode == "menu":
             action="menu nav up"
             self.menuController.menu_up()
@@ -201,10 +206,11 @@ class Controller(ControllerBase):
             #print("EVENT: Btn UP pressed, radio, on " + self.current_screenmode)
             action = self.radio.onEvent("up")
             self.display()
-        print(f"EVENT: Btn UP pressed, {action}, on " + self.current_screenmode)
+        print(f"EVENT: Btn UP pressed, {action}, on " + screenmode)
 
     def onDown(self):
         action=""
+        screenmode = self.current_screenmode
         if self.current_screenmode == "menu":
             action="menu NAV down"
             self.menuController.menu_down()
@@ -219,10 +225,11 @@ class Controller(ControllerBase):
             #print("EVENT: Btn DOWN pressed, radio, on " + self.current_screenmode)
             action = self.radio.onEvent("down")
             self.display()
-        print(f"EVENT: Btn DOWN pressed, {action}, on " + self.current_screenmode)
+        print(f"EVENT: Btn DOWN pressed, {action}, on " + screenmode)
 
     def onMid(self):
         action=""
+        screenmode = self.current_screenmode
         if ("menu" == self.current_screenmode):
             action = "menu NAV "+ self.menuController.get_menu() 
             self.menuNav()
@@ -237,9 +244,11 @@ class Controller(ControllerBase):
         elif (self.current_screenmode == "radio"):
             action = self.radio.onEvent("mid")
             self.display()
-        print(f"EVENT: Btn MID pressed, {action}, on" + self.current_screenmode)
+        print(f"EVENT: Btn MID pressed, {action}, on" + screenmode)
     
     def onLeft(self):
+        screenmode = self.current_screenmode
+        action=""
         if (self.current_screenmode == "menu"):
             action="menu NAV back"
             if not self.menuController.menu_prev():
@@ -262,10 +271,11 @@ class Controller(ControllerBase):
             #print("EVENT: Btn MID pressed, radio, on " + self.current_screenmode)
             action = self.radio.onEvent("left")
             self.display()
-        print(f"EVENT: Btn LEFT pressed, {action}, on " + self.current_screenmode)
+        print(f"EVENT: Btn LEFT pressed, {action}, on " + screenmode)
 
     def onRight(self):
         action=""
+        screenmode = self.current_screenmode
         if (self.current_screenmode == "menu"):
             action="menu select"
             #self.menuController.menu_select()
@@ -281,7 +291,7 @@ class Controller(ControllerBase):
         elif (self.current_screenmode == "radio"):
             action = self.radio.onEvent("right")
             self.display()
-        print(f"EVENT: Btn RIGHT pressed, {action}, on " + self.current_screenmode)
+        print(f"EVENT: Btn RIGHT pressed, {action}, on " + screenmode)
 
     def onReturnControl(self):
         # did they give us control
@@ -294,6 +304,7 @@ class Controller(ControllerBase):
         print("Scheduling shutdown in " + str(SHUTDOWN_DELAY) + " seconds...")
         #if self.shutDownCount < 0:
         self.shutDownCount = SHUTDOWN_DELAY
+        self.shutDownCmd = self.shutDownCmd
         self.setScreenMode("shutdown")
     
     def cancelShutdownM(self):
