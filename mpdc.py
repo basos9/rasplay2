@@ -1,7 +1,7 @@
 from mpd import MPDClient
 import copy
 
-SHOW_VOLUME_LOOPS = 5
+SHOW_VOLUME_LOOPS = 4
 MPD_VOLSTEP = 5
 
 class MPDC:
@@ -253,7 +253,7 @@ class MPDC:
       timedel = " - "
   
     self.prevPrintState = self.printState
-    self.printState = f"{vline}{slug}"
+    self.printState = f"{vline}{slug}{current.get("title","-")}"
     time = f'{statep}{MPDC.fmtSecs(status.get("elapsed",None),":")}{timedel}{duration}'
     sitems = [time,btr]
     if (vstat):
