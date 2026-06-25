@@ -82,8 +82,8 @@ class disp_ssd1306(disp_oled):
     state["last_time"] = now
     state["offset"] += self.scroll_speed * elapsed
     if state["offset"] >= max_offset:
-      state["offset"] = -OFFSET_START_IPOS
-    print(f" slide offset {i} tw {width} maxoff {max_offset} off {state["offset"]:1f} l {len(line)} '")
+      state["offset"] = -SCROLL_OFFSET_SPACE
+    print(f" slide offset {i} tw {width} maxoff {max_offset} off {state["offset"]:1f} l {len(line)} ")
     offset = state["offset"]
     offset = int(offset) if offset > 0 else 0
     self.scroll_states[i] = state
