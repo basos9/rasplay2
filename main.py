@@ -13,8 +13,7 @@ from buttons import buttonsCtrl
 from controller import Controller
 from _keymock import keymock
 from radioCatalog import RadioCatalogPresets
-
-version = "2.4.0"
+from version import version
 
 ## CONFIG
 ##
@@ -30,7 +29,7 @@ else:
     raise ValueError(f"Unsupported display type {DISP.type}")
 
 mpd = MPDC(MPD.host, MPD.port, MPD.password)
-#mpd.printDebug()
+mpd.printDebug()
 
 sysInfo = SysInfo(SYS.mntreg, SYS.dht_pin)
 print(sysInfo.showInfo())

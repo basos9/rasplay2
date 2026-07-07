@@ -591,7 +591,7 @@ class Controller(ControllerBase):
                 self.lShow( self.menuController.show_menu(), True)
             elif self.current_screen == "player":
                 st = self.mpd.showStatus()
-                self.lShow( st, True or dispChanged or self.mpd.statusHasChanged(), slide=True, slideStamp=st[0] )
+                self.lShow( st, dispChanged or self.mpd.statusHasChanged(), slide=True, slideStamp=st[0] )
             elif self.current_screen == "stats":
                 self.lShow(self.sysinfo.showInfo(), dispChanged)
             elif self.current_screen == "top":
