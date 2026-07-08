@@ -29,7 +29,7 @@ else:
     raise ValueError(f"Unsupported display type {DISP.type}")
 
 mpd = MPDC(MPD.host, MPD.port, MPD.password)
-mpd.printDebug()
+#mpd.printDebug()
 
 sysInfo = SysInfo(SYS.mntreg, SYS.dht_pin)
 print(sysInfo.showInfo())

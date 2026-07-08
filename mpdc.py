@@ -2,6 +2,8 @@ from mpd import MPDClient
 import copy
 
 SHOW_VOLUME_LOOPS = 4
+
+
 MPD_VOLSTEP = 5
 
 class MPDC:
@@ -251,17 +253,32 @@ class MPDC:
     timedel=""
     if duration != "":
       timedel = " - "
-  
+
     self.prevPrintState = self.printState
     self.printState = f"{vline}{slug}{current.get("title","-")}"
     time = f'{statep}{MPDC.fmtSecs(status.get("elapsed",None),":")}{timedel}{duration}'
-    sitems = [time,btr]
+    pl = status.get("playlistlength", 0)
+    cu = int(current.get("pos",0)) + 1
+    pl = f'{cu}/{pl}'
+    sitems = [time, btr, pl]
     if (vstat):
       sitems.insert(0,vstat)
     sline = " | ".join(sitems)
-    ret = [current.get("title","-"), current.get("artist","-") ,sline, vline]
+    date = current.get("date")
+    date = date + " - " if date else ""
+    track = current.get("track")
+    track = " - " + track if track else ""
+    ret = [
+            current.get("title","-"),
+            current.get("artist","-"),
+            f'{date}{current.get("album","-")}{track}',
+            sline,
+            vline
+    ]
     if slug:
+      ret.pop(2)
       ret.insert(0,slug)
+      
     return ret
 
   def statusHasChanged(self):
@@ -280,7 +297,7 @@ class MPDC:
       playlist = self.mpd.playlistid()
       print("MPD info: "+str(status)+"\nMPD CUR:"+str(current))
       #print(" PLI:"+str(playlist))
-      #print("TAG "+str(self.mpd.tagtypes()))
+      print("TAG "+str(self.mpd.tagtypes()))
       #print(self.mpd.playlistfind("file","willnotfind"))
 
 
