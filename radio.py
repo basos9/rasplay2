@@ -180,7 +180,9 @@ class RadioController(ControllerBase):
         if self.current_screenmode == "menu":
             return (self.menuController.show_menu(), True)
         elif self.current_screenmode == "player":
-            return (self.mpdc.showStatus(), dispChanged or self.mpdc.statusHasChanged())
+            st, sl = self.mpdc.showStatus()
+            #sl = [False if i in [3,4] else True for i,v in enumerate(st) : ]
+            return (st, dispChanged or self.mpdc.statusHasChanged(), "", sl, st[0])
         #elif self.current_screenmode == "_back":
         #    return None
         else:

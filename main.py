@@ -5,6 +5,8 @@
 
 #import time
 
+import signal
+
 from mpdc import MPDC
 from transstats import TRA
 from _sysinfo import SysInfo
@@ -24,7 +26,7 @@ from config import MPD, TRANS, BUTTONS, SYS, DISP, RADIO
 ##
 
 if DISP.type == "ssd1306":
-    disp = disp_ssd1306()
+    disp = disp_ssd1306(fontfile=DISP.font)
 else:
     raise ValueError(f"Unsupported display type {DISP.type}")
 
@@ -68,6 +70,19 @@ except ValueError as e:
 if BUTTONS.keymock:
     print("Keymock enabled ...")
     keymock(ctrl)
+
+def shutdown_handler(signum, _frame):
+    print(f"Received signal {signum}, shutting down.")
+    try:
+        ctrl.fin()
+    except Exception as exc:
+        print(f"Error during shutdown: {exc}")
+    raise SystemExit(0)
+
+signal.signal(signal.SIGTERM, shutdown_handler)
+signal.signal(signal.SIGINT, shutdown_handler)
+
+
 
 ##
 ## PROGRAME

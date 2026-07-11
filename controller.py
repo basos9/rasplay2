@@ -590,8 +590,8 @@ class Controller(ControllerBase):
             elif self.current_screen == "menu":
                 self.lShow( self.menuController.show_menu(), True)
             elif self.current_screen == "player":
-                st = self.mpd.showStatus()
-                self.lShow( st, dispChanged or self.mpd.statusHasChanged(), slide=True, slideStamp=st[0] )
+                st, sl = self.mpd.showStatus()
+                self.lShow( st, dispChanged or self.mpd.statusHasChanged(), "", sl, slideStamp=st[0] )
             elif self.current_screen == "stats":
                 self.lShow(self.sysinfo.showInfo(), dispChanged)
             elif self.current_screen == "top":
@@ -599,8 +599,8 @@ class Controller(ControllerBase):
             elif self.current_screen == "transmission":
                 self.lShow(self.tra.getStats(), dispChanged)
             elif self.current_screen == "radio":
-                st = self.radio.showD()
-                self.lShow( *st, slide=True, slideStamp = st[0][1])
+                dp = self.radio.showD()
+                self.lShow( *dp)
             else:
                 raise LogicException(f'Invalid screen (display {self.current_screen }) '+self.current_screen)
         except LogicException as e:
@@ -608,6 +608,8 @@ class Controller(ControllerBase):
         except Exception as e:
             print(f"Exception (display {self.current_screen }): {str(e)}")
             self.last_error = str(e)
+            # debug
+            # raise
 
     def displayShutdown(self):
         if self.shutDownCount > 0:

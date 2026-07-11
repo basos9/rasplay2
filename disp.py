@@ -4,22 +4,24 @@ from luma.core.render import canvas
 from PIL import Image, ImageDraw, ImageFont
 import time
 from _maths import RunningAverage
+from functools import reduce
 
 ## LCD
 ## 
 
 
-SCROLL_PXPSEC = 2.5  # pixels per second for sliding text
-SCROLL_OFFSET_SPACE = 2 # scroll extra
-SCROLL_OFFSET_START = 5 # imaginary starting position
+SCROLL_PXPSEC = 10 # pixels per second for sliding text
+SCROLL_OFFSET_LOOP = 10 # per loop imaginary starting position
+SCROLL_OFFSET_START = 20 # imaginary starting position
 RENDER_STATS_LOOPS = 60  # number of loops to average render time over
+SCROLL_WIDTH_ADJUST = 5 # correct detection for scrolling
 
 class disp_oled():
   pass
 
 
 class disp_ssd1306(disp_oled):
-  def __init__(self, LCD_I2C_PORT=1, LDC_I2C_ADDR=0x3C):
+  def __init__(self, LCD_I2C_PORT=1, LDC_I2C_ADDR=0x3C, fontfile: str =None):
         # rev.1 users set port=0
     # substitute spi(device=0, port=0) below if using that interface
     # substitute bitbang_6800(RS=7, E=8, PINS=[25,24,23,27]) below if using that interface
@@ -40,14 +42,33 @@ class disp_ssd1306(disp_oled):
     self.scroll_speed = SCROLL_PXPSEC  # pixels per second for sliding text
     # Load default font.
 
-    self.font = ImageFont.load_default()
-    self.xfonts = {
-      "l":  ImageFont.load_default(16),
-      "ll": ImageFont.load_default(20)
-    }
+    loaded = False
+    while fontfile and not loaded:
+      try:
+        self.font = ImageFont.truetype(fontfile, 10)
+        self.xfonts = {
+          "l":  ImageFont.truetype(fontfile, 16),
+          "ll": ImageFont.truetype(fontfile, 20)
+        }
+        loaded = True
+      except Exception as e:
+        print(f"Error loading font {fontfile}: {e}")
+        if not fontfile.startswith("fonts/"):
+          fontfile = "fonts/" + fontfile
+          continue
+        fontfile = None
+  
+    if fontfile is None or not fontfile:
+      self.font = ImageFont.load_default()
+      self.xfonts = {
+        "l":  ImageFont.load_default(16),
+        "ll": ImageFont.load_default(20)
+      }
+      fontfile = "default"
+
     screen_lines = self.getScreenLines()
   
-    print(f"disp_ssd1306: Initialized with {screen_lines} lines, size {self.width}x{self.height}, default font size {self.font.size}")
+    print(f"disp_ssd1306: Initialized with {screen_lines:1f} lines, size {self.width}x{self.height}, {fontfile} font size {self.font.size}")
 
   def getScreenLines(self, font=None):
     if font is None:
@@ -56,8 +77,9 @@ class disp_ssd1306(disp_oled):
 
   def _get_text_width(self, text, font):
     #try:
-      bbox = font.getbbox(text)
-      return bbox[2] - bbox[0]
+      #bbox = font.getbbox(text)
+      #return bbox[2] - bbox[0]
+    return font.getlength(text)
     #except Exception:
     #  return font.getsize(text)[0]
 
@@ -69,25 +91,43 @@ class disp_ssd1306(disp_oled):
     #  return font.getsize("A")[1]
 
   def _get_slide_offset(self, line, font, i):
-    width = self._get_text_width(line, font)
-    if width <= self.width:
-      return 0
-    max_offset = max(self.width/4, width - self.width - SCROLL_OFFSET_SPACE  )
-    now = time.monotonic()
+    # get or init state
     state = self.scroll_states.get(i)
-    if state is None:
-      state = {"offset": -SCROLL_OFFSET_START, "last_time": now}
-      self.scroll_states[i] = state
+    now = time.monotonic()
+    leng = len(line)
+    if state is None or state.get("length", 0) != len(line):
+        width = self._get_text_width(line, font)
+        chpx = leng / width if width > 0 else 0
+        max_offset = max(self.width/4, width - self.width/7 )
+        state = {
+                "offset": -SCROLL_OFFSET_START, 
+                "last_time": now, 
+                "width": width, 
+                "length": leng,
+                "chpx": chpx,
+                "max_offset": max_offset,
+                "line": line }
+    else:
+        chpx = state.get("chpx")
+        width = state.get("width")
+        max_offset = state.get("max_offset")
+    if width < self.width - SCROLL_WIDTH_ADJUST:
+        return 0
+      # self.scroll_states[i] = state
     elapsed = now - state["last_time"]
+    # update state
     state["last_time"] = now
     state["offset"] += self.scroll_speed * elapsed
-    if state["offset"] >= max_offset:
-      state["offset"] = -SCROLL_OFFSET_SPACE
-    print(f" slide offset {i} tw {width} maxoff {max_offset} off {state["offset"]:1f} l {len(line)} ")
-    offset = state["offset"]
-    offset = int(offset) if offset > 0 else 0
+    # reset offset
+    if state["offset"] > max_offset:
+      state["offset"] = -SCROLL_OFFSET_LOOP
     self.scroll_states[i] = state
-    return int(offset)
+    # last calcs
+    offset = state["offset"] if state["offset"] > 0 else 0
+    charoff = offset * chpx
+    #print(f" slide {i} choff {charoff:1f} tw {width} maxpxoff {max_offset} pxoff {state["offset"]:1f} l {len(line)} chpx {chpx:1f} :{line}")
+    # offset in pixels, convert to chars
+    return int(charoff)
 
   def _reset_scroll_states(self, stamp=None):
     if stamp != self.scroll_stamp:
@@ -95,14 +135,16 @@ class disp_ssd1306(disp_oled):
       self.scroll_states = {}
       self.scroll_stamp = stamp
 
-  def _slide_lines(self, lines, font):
+  def _slide_lines(self, lines, font, slidelist=None):
     #line_height = self._get_line_height(font) + 1
     olines = list()
     for i, line in enumerate(lines):
-      width = self._get_text_width(line, font)
-      x = 0
-      if width > self.width:
-        x = self._get_slide_offset(line, font, i)
+      slide = slidelist[i] if slidelist is not None else True
+      if not slide:
+        #print(f" skip slide {i} :{line}")
+        olines.append(line)
+        continue
+      x = self._get_slide_offset(line, font, i)
       line = line[x:]
       olines.append(line)
     return olines
@@ -110,7 +152,7 @@ class disp_ssd1306(disp_oled):
 
 
   ## painting
-  def lShow(self, strin: str|list, dprint: bool =False, sz: str = "", slide: bool = False, slideStamp = ""):
+  def lShow(self, strin: str|list, dprint: bool =False, sz: str = "", slide: bool|list = False, slideStamp = ""):
     start = time.process_time() 
     if strin is None:
         strin = ""
@@ -120,16 +162,21 @@ class disp_ssd1306(disp_oled):
     else: # string
         lines = str(strin).splitlines()
         #strin = "\n".join(lines)
-  
+
     font = self.font
     if sz and self.xfonts[sz] is not None:
       font = self.xfonts[sz]
-  
+
+    slidelist = None
+    if isinstance(slide, (list, tuple)):
+      slidelist = slide
+      slide = reduce(lambda x, y: x or y, slidelist)
+      #print(f"lShow(): slide list {slidelist} => {slide}")
     if slide:
       if slideStamp == "":
         slideStamp = lines[0]
       self._reset_scroll_states(slideStamp)
-      lines = self._slide_lines(list(lines), font)
+      lines = self._slide_lines(list(lines), font, slidelist)
     else:
       self._reset_scroll_states()
 
@@ -140,7 +187,7 @@ class disp_ssd1306(disp_oled):
       if self.renderbuffer == strin:
         return True
       self.renderbuffer = strin
-  
+
     if self.inflight:
       print ("lShow(): In flight, skipping "+strin)
       prevSkipped = self.prevSkipped

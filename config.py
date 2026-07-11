@@ -55,6 +55,7 @@ BUTTONS = SimpleNamespace(
 disp_cfg = _cfg.get("display", {})
 DISP = SimpleNamespace(
 	type = disp_cfg.get("type", "ssd1306"),
+	font = disp_cfg.get("font", None),
 )
 
 # Mounts regex for SysInfo

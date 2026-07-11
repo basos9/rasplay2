@@ -12,11 +12,13 @@ buttons:  #use BOARDxx naming for physical pinout from https://gpiozero.readthed
   set: BOARD38
   rst: BOARD40
   debouncems: 100
-  # debugging
-  keymock: false
+  # keymock, optional, use debugging
+  #keymock: false
 
 display:
   type: ssd1306
+  # font optional
+  #font: fontfile
 
 radio:
   presets:
@@ -25,13 +27,13 @@ radio:
     soma/lush: "https://ice2.somafm.com/lush-128-mp3"
 
 sys:
-  mntreg: "^/"
-  # Optinal, EXPERIMENTAL, use Dn naming for GPIOn from https://learn.adafruit.com/arduino-to-circuitpython/digital-in-out
-  # dht_pin: 
+  mntreg: "^/|xoros|data|aux"
+  # Optional, EXPERIMENTAL, use Dn naming for GPIOn from https://learn.adafruit.com/arduino-to-circuitpython/digital-in-out
+  # dht_pin: D24
 
 # Optional transmission config
-transmission:
-  host: localhost
-  port: 9091
-  user: transmission
-  password: transmission
+#transmission:
+#  host: localhost
+#  port: 9091
+#  user: transmission
+#  password: transmission

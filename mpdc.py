@@ -220,7 +220,7 @@ class MPDC:
     except Exception as e:
       print("Error getting MPD status: "+str(e))
       self.reconn()
-      return ("-","-","MPD Error")
+      return (("-","-","MPD Error"), False)
 
     btr = f'{status.get("bitrate","-")}k'
     pm=("PAUSE",
@@ -278,8 +278,9 @@ class MPDC:
     if slug:
       ret.pop(2)
       ret.insert(0,slug)
-      
-    return ret
+    slide = [False if i >= 3 else True for i,v in enumerate(ret)]
+  
+    return (ret, slide)
 
   def statusHasChanged(self):
     printChanged = self.printState != self.prevPrintState
