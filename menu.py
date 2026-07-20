@@ -1,7 +1,7 @@
 
 
 class MenuController():
-    def __init__(self, menu_items, dispLines=0):
+    def __init__(self, menu_items, dispLines: int =0):
         self.menu_index = 0
         self.menu_stack = [menu_items]  # Stack of menu levels for submenu support
         self.current_menu = menu_items

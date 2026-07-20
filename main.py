@@ -26,7 +26,7 @@ from config import MPD, TRANS, BUTTONS, SYS, DISP, RADIO
 ##
 
 if DISP.type == "ssd1306":
-    disp = disp_ssd1306(fontfile=DISP.font)
+    disp = disp_ssd1306(fontfile=DISP.font, fontsize=DISP.fontsize, fontxsizes=DISP.fontxsizes)
 else:
     raise ValueError(f"Unsupported display type {DISP.type}")
 

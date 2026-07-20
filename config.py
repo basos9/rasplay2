@@ -56,6 +56,8 @@ disp_cfg = _cfg.get("display", {})
 DISP = SimpleNamespace(
 	type = disp_cfg.get("type", "ssd1306"),
 	font = disp_cfg.get("font", None),
+    fontsize = disp_cfg.get("fontsize", 11),
+    fontxsizes = disp_cfg.get("fontxsizes", [14, 16])
 )
 
 # Mounts regex for SysInfo

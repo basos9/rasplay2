@@ -17,7 +17,7 @@ from radio import RadioController
 from radioCatalog import RadioCatalog
 import config
 from _base import ControllerBase, UnknownEventException
-
+import math
 # from psutil import cpu_percent
 # import psutil
 
@@ -63,7 +63,9 @@ screens = {
 class Controller(ControllerBase):
     def __init__(self, mpd: MPDC, disp: disp_oled, sysInfo: SysInfo, version):
         print(f"Controller Init")
-        self.screen_lines = disp.getScreenLines()
+        self.screen_lines = math.floor(disp.getScreenLines())
+        if self.screen_lines == 0:
+            raise("Invalid config, lines is zero, maybe change font settings")
         self.menuController = MenuController(menudef, self.screen_lines)
         self.mpd = mpd
         #self.disp = disp

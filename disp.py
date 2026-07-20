@@ -21,7 +21,7 @@ class disp_oled():
 
 
 class disp_ssd1306(disp_oled):
-  def __init__(self, LCD_I2C_PORT=1, LDC_I2C_ADDR=0x3C, fontfile: str =None):
+  def __init__(self, LCD_I2C_PORT=1, LDC_I2C_ADDR=0x3C, fontfile: str =None, fontsize: int =11, fontxsizes: list =[16,20]):
         # rev.1 users set port=0
     # substitute spi(device=0, port=0) below if using that interface
     # substitute bitbang_6800(RS=7, E=8, PINS=[25,24,23,27]) below if using that interface
@@ -45,10 +45,10 @@ class disp_ssd1306(disp_oled):
     loaded = False
     while fontfile and not loaded:
       try:
-        self.font = ImageFont.truetype(fontfile, 10)
+        self.font = ImageFont.truetype(fontfile, fontsize)
         self.xfonts = {
-          "l":  ImageFont.truetype(fontfile, 16),
-          "ll": ImageFont.truetype(fontfile, 20)
+          "l":  ImageFont.truetype(fontfile, fontxsizes[0]),
+          "ll": ImageFont.truetype(fontfile, fontxsizes[1])
         }
         loaded = True
       except Exception as e:
@@ -59,15 +59,15 @@ class disp_ssd1306(disp_oled):
         fontfile = None
   
     if fontfile is None or not fontfile:
-      self.font = ImageFont.load_default()
+      self.font = ImageFont.load_default(fontsize)
       self.xfonts = {
-        "l":  ImageFont.load_default(16),
-        "ll": ImageFont.load_default(20)
+        "l":  ImageFont.load_default(fontxsizes[0]),
+        "ll": ImageFont.load_default(fontxsizes[1])
       }
       fontfile = "default"
 
     screen_lines = self.getScreenLines()
-  
+
     print(f"disp_ssd1306: Initialized with {screen_lines:1f} lines, size {self.width}x{self.height}, {fontfile} font size {self.font.size}")
 
   def getScreenLines(self, font=None):
