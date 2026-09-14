@@ -20,15 +20,29 @@ class disp_oled():
   pass
 
 
-class disp_ssd1306(disp_oled):
-  def __init__(self, LCD_I2C_PORT=1, LDC_I2C_ADDR=0x3C, fontfile: str =None, fontsize: int =11, fontxsizes: list =[16,20]):
+class disp_i2c(disp_oled):
+  def __init__(self, device_type, LCD_I2C_PORT=1, LDC_I2C_ADDR=0x3C, fontfile: str =None, fontsize: int =11, fontxsizes: list =[16,20]):
         # rev.1 users set port=0
     # substitute spi(device=0, port=0) below if using that interface
     # substitute bitbang_6800(RS=7, E=8, PINS=[25,24,23,27]) below if using that interface
     serial = i2c(port=LCD_I2C_PORT, address=LDC_I2C_ADDR)
 
     # substitute ssd1331(...) or sh1106(...) below if using that device
-    self.device = ssd1306(serial)
+    if device_type == "ssd1306":
+        self.device = ssd1306(serial)
+    elif device_type == "ssd1309":
+        self.device = ssd1309(serial)
+    elif device_type == "ssd1325":
+        self.device = ssd1325(serial)
+    elif device_type == "ssd1331":
+        self.device = ssd1331(serial)
+    elif device_type == "sh1106":
+        self.device = sh1106(serial)
+    elif device_type == "ws0010":
+        self.device = ws0010(serial)
+    else:
+        raise ValueError(f"Unsupported device type: {device_type}")
+
     self.height = self.device.height
     self.width = self.device.width
     self.do_renderbuffer = True
@@ -68,7 +82,7 @@ class disp_ssd1306(disp_oled):
 
     screen_lines = self.getScreenLines()
 
-    print(f"disp_ssd1306: Initialized with {screen_lines:1f} lines, size {self.width}x{self.height}, {fontfile} font size {self.font.size}")
+    print(f"disp_i2c {device_type}: Initialized with {screen_lines:1f} lines, size {self.width}x{self.height}, {fontfile} font size {self.font.size}")
 
   def getScreenLines(self, font=None):
     if font is None:

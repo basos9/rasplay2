@@ -12,13 +12,17 @@ buttons:  #use BOARDxx naming for physical pinout from https://gpiozero.readthed
   set: BOARD38
   rst: BOARD40
   debouncems: 100
-  # keymock, optional, use debugging
+  ## keymock, optional, use debugging
   #keymock: false
 
 display:
+  ## device types: ssd1306, ssd1309, ssd1325, ssd1331, sh1106, ws0010
+  ## REF https://luma-oled.readthedocs.io/en/latest/intro.html
   type: ssd1306
-  # font optional
+  ## font optional
   #font: fontfile
+  #fontsize: 11
+  #fontxsizes: [13,14]
 
 radio:
   presets:
@@ -28,10 +32,10 @@ radio:
 
 sys:
   mntreg: "^/|xoros|data|aux"
-  # Optional, EXPERIMENTAL, use Dn naming for GPIOn from https://learn.adafruit.com/arduino-to-circuitpython/digital-in-out
+  ## Optional, EXPERIMENTAL, use Dn naming for GPIOn from https://learn.adafruit.com/arduino-to-circuitpython/digital-in-out
   # dht_pin: D24
 
-# Optional transmission config
+## Optional transmission config
 #transmission:
 #  host: localhost
 #  port: 9091

@@ -10,7 +10,7 @@ import signal
 from mpdc import MPDC
 from transstats import TRA
 from _sysinfo import SysInfo
-from disp import disp_ssd1306
+from disp import disp_i2c
 from buttons import buttonsCtrl
 from controller import Controller
 from _keymock import keymock
@@ -25,10 +25,7 @@ from config import MPD, TRANS, BUTTONS, SYS, DISP, RADIO
 ## Init
 ##
 
-if DISP.type == "ssd1306":
-    disp = disp_ssd1306(fontfile=DISP.font, fontsize=DISP.fontsize, fontxsizes=DISP.fontxsizes)
-else:
-    raise ValueError(f"Unsupported display type {DISP.type}")
+disp = disp_i2c(device_type=DISP.type, fontfile=DISP.font, fontsize=DISP.fontsize, fontxsizes=DISP.fontxsizes)
 
 mpd = MPDC(MPD.host, MPD.port, MPD.password)
 #mpd.printDebug()
