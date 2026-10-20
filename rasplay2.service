@@ -9,6 +9,8 @@ Type=exec
 User=rasplay2
 Environment=CONFIG_FILE=/usr/local/etc/rasplay2/config.yaml
 ExecStart=/usr/local/share/rasplay2/venv/bin/python3 /usr/local/share/rasplay2/main.py
+StateDirectory=rasplay2
+WorkingDirectory=/var/lib/rasplay2
 Restart=on-failure
 RestartSec=5
 RestartSteps=6
