@@ -28,7 +28,7 @@ MPD_SHOWPAUSEDFORSECS = 100
 ERRSHOW_FORSECS = 3
 SYSSHOW_FORSECS = 60
 SYSDISP_CPU_THRES = 20
-SHOWCLOCK_FORSECS = 60
+SHOWCLOCK_FORSECS = 600
 SYSPRINT_EVERYSECS = 10
 CP = 0.5 #clock pulse
 
@@ -487,15 +487,15 @@ class Controller(ControllerBase):
     
     def mainClockFence(self, diffTime):
         now = time.localtime()
-        start = (18, 0)
-        end = (23, 0)
-        current = (now.tm_hour, now.tm_min)
-        inside = start <= current <= end
+        #start = (18, 0)
+        #end = (23, 0)
+        #current = (now.tm_hour, now.tm_min)
+        #inside = start <= current <= end
 
-        if (inside):
-            self.showClockFor = -1
-            return True
-        elif self.showClockFor > 0:
+        #if (inside):
+        #    self.showClockFor = -1
+        #    return True
+        if self.showClockFor > 0:
             self.showClockFor = self.showClockFor - diffTime
             if (self.showClockFor < 0):
                 self.showClockFor = -1

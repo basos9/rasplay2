@@ -1,6 +1,7 @@
 
 luma.oled
 gpiozero
+lgpio
 python-mpd2
 numpy
 transmission_rpc

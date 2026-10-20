@@ -49,7 +49,7 @@ BUTTONS = SimpleNamespace(
 	btn_set=btn_cfg.get("set", "BOARD38"),
 	rst=btn_cfg.get("rst", "BOARD40"),
 	keymock=btn_cfg.get("keymock", False),
-	debounce_ms=btn_cfg.get("debouncems", 100)
+	debouncems=btn_cfg.get("debouncems", 100)
 )
 
 disp_cfg = _cfg.get("display", {})

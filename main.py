@@ -45,7 +45,7 @@ bat = buttonsCtrl(
   bMid=BUTTONS.mid,
   bSet=BUTTONS.btn_set,
   bRst=BUTTONS.rst,
-  debounce=BUTTONS.debounce_ms/1000 if BUTTONS.debounce_ms else None
+  debounce=BUTTONS.debouncems/1000 if BUTTONS.debouncems else None
 )
 
 try:

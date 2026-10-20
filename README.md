@@ -15,6 +15,8 @@ Rasplay is a music player frontent for Rasberry Pi. See below for hardware confi
 ## Installation 
 - Install Rasplay2
 ```
+## requirements for gziozero REF https://gpiozero.readthedocs.io/en/stable/installing.html
+sudo apt install python3-dev swig liblgpio-dev -y
 sudo ./install.sh
 vim /usr/local/etc/rasplay2/config.yaml # Edit config as needed
 sudo systemctl enable rasplay2
