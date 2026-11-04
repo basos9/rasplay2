@@ -23,7 +23,7 @@ import math
 
 
 
-SHUTDOWN_DELAY = 30
+SHUTDOWN_DELAY = 20
 MPD_SHOWPAUSEDFORSECS = 100
 ERRSHOW_FORSECS = 3
 SYSSHOW_FORSECS = 60
@@ -42,6 +42,7 @@ menudef = {
         "top": "Top Processes",
         "transmission": "Transmission",
         "upnpres": "UPNP Restart",
+        "mpdres": "MPD Restart",
         "reboot": "Reboot", 
         "shutdown": "Shutdown" },
     "clock": "Clock"
@@ -160,6 +161,10 @@ class Controller(ControllerBase):
             action="cancel shutdown"
             self.cancelShutdownM()
             self.display()
+        elif self.current_screenmode == "shutdown":
+            action="main"
+            self.setScreenMode("main")
+            self.display()
         #elif (self.current_screenmode == "menu"):
         #     print("EVENT: Btn RST presed, close menu, on " + self.current_screenmode)
         #     self.setScreenMode("main")
@@ -189,7 +194,7 @@ class Controller(ControllerBase):
         print(f"EVENT: Btn RST held pressed, init shutdown sequence")
         self.schedShutdownM(self.cmdShutdown)
         self.display()
-  
+
     def onUp(self):
         action=""
         screenmode = self.current_screenmode
@@ -302,20 +307,20 @@ class Controller(ControllerBase):
             self.setScreenMode("main")
             # NOTE dont handleMain() here to avoid complex interactions
 
-    def schedShutdownM(self, shutdownCmd ):
+    def schedShutdownM(self, shutDownCmd ):
         print("Scheduling shutdown in " + str(SHUTDOWN_DELAY) + " seconds...")
         #if self.shutDownCount < 0:
         self.shutDownCount = SHUTDOWN_DELAY
-        self.shutDownCmd = self.shutDownCmd
+        self.shutDownCmd = shutDownCmd
         self.setScreenMode("shutdown")
-    
+
     def cancelShutdownM(self):
         print("Cancel scheduled shutdown...")
         self.shutDownCount = -1
         self.shutDownCmd = None
         self.setScreenMode("main")
         self.handleMain()
-        
+
     def schedScreenMain(self, screen, showForSecs):
         #if self.showScreenFor < 0:
           print(f"Schedule {screen} display for {showForSecs} seconds...")
@@ -391,12 +396,15 @@ class Controller(ControllerBase):
       elif self.menuController.get_menu() == "clock":
           self.setScreenMode("clock")
       elif self.menuController.get_menu() == "upnpres":
-          #self.setScreenMode("main")
+          self.setScreenMode("main")
           self.cmdRestartUPNP()
+      elif self.menuController.get_menu() == "mpdres":
+          self.setScreenMode("main")
+          self.cmdRestartMPD()
       elif self.menuController.get_menu() == "radio":
           self.setScreenMode("radio")
           self.radio.onEvent("open")
-  
+
     def resetMain(self):
         self.showPauseFor = -2
         self.showScreenFor = -1
@@ -513,6 +521,7 @@ class Controller(ControllerBase):
             self.setScreen("shutdown")
             self.shutDownCount = self.shutDownCount - diffTime
             if self.shutDownCount <= 0:
+                self.shutDownCount = 0;
                 try:
                     self.shutDownCmd()
                 except Exception as e:
@@ -615,29 +624,39 @@ class Controller(ControllerBase):
 
     def displayShutdown(self):
         if self.shutDownCount > 0:
+            s = round(self.shutDownCount)
             if self.shutDownCmd == self.cmdReboot:
-                self.lShow (f'Rebooting in {abs(self.shutDownCount)}...', True)
+                self.lShow (f'Rebooting in {s}...', True)
             else:
-              self.lShow (f'Shutting Down in {abs(self.shutDownCount)}...', True)
-        elif self.shutDownCount == 0:
-            self.lShow (f'Goodbye...', True)
+              self.lShow (f'Shutting Down in {s}...', True)
+        #elif self.shutDownCount == 0:
+        #    self.lShow (f'Goodbye ...', True)
 
     # def displayMain(self):
     #     cpu_percent = psutil.cpu_percent(interval=1)
     #     print(f"CPU Usage: {cpu_percent}%")
 
     def cmdShutdown(self):
-        self.lShow(f'Goodbye....')
-        self.sysinfo.shutdown()
+        self.lShow(f'Goodbye....', True)
+        print("Calling sysinfo shutdown")
+        r=self.sysinfo.cmdShutdown()
+        if not r[0]:
+            self.last_error = r[1]
+            self.lShow(r[1], True)
 
     def cmdReboot(self):
-        self.lShow(f'I\'ll be back...')
-        self.sysinfo.reboot() 
-        
+        self.lShow(f'I\'ll be back...', True)
+        r=self.sysinfo.cmdReboot()
+        if not r[0]:
+            self.last_error = r[1]
+            self.lShow(r[1], True)
+
     def cmdRestartUPNP(self):
-        text = self.sysinfo.restartUPNP()
-        self.last_error = text
-        self.lShow(text, True)
+        r = self.sysinfo.cmdRestartUPNP()
+        if not r[0]:
+            self.last_error = r[1]
+        self.last_error = r[1]
+        self.lShow(r[1], True)
 
 # def draw_menu(draw, state):
 #     for i, item in enumerate(menu_items):

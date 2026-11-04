@@ -50,25 +50,29 @@ class sysCmdInfo():
     cmd = """df -h | awk '$NF~"("""+mntreg+""")$"{gsub(/\\/media\\//,"",$6); printf "%s: %s ", $6,$5}'"""
     Disk = subprocess.check_output(cmd, shell = True, text = True )
     return Disk
-  
+
   def getCpuTemp():
     cmd = """vcgencmd measure_temp | awk '{gsub(/temp=/,""); printf "%s",$0;}'"""
     Temp = subprocess.check_output(cmd, shell = True, text=True )
     return Temp
-  
-  def shutdown():
-      print ("Shutting down")
-      subprocess.check_output("sleep 2", shell = True, text=True )
-      subprocess.check_output("sudo -n poweroff", shell = True, text=True )
 
-  def reboot():
+  def cmdShutdown():
+      print ("Shutting down")
+      r = subprocess.run("sudo -n shutdown -P", shell = True, capture_output = True, text = True)
+      print (f"Shutting down: code: {r.returncode}: err: {r.stderr}")
+      return (r.returncode == 0, r.stderr + r.stdout)
+
+  def cmdReboot():
       print ("Rebooting")
-      subprocess.check_output("sleep 2", shell = True, text=True )
-      subprocess.check_output("sudo -n reboot", shell = True, text=True )
-  
-  def restartUPNP():
-     print ("Restart upmpdcli")
-     return subprocess.check_output("sudo -n systemctl restart upmpdcli", shell= True, text = True)
+      r = subprocess.run("sudo -n reboot", shell = True, capture_output = True, text = True )
+      print (f"Rebooting: code: {r.returncode}: err: {r.stderr}")
+      return (r.returncode == 0, r.stderr + r.stdout)
+
+  def cmdRestartService(service):
+     print (f'Restart {service}')
+     r = subprocess.run(f'sudo -n systemctl restart {service}', shell = True, capture_output= True, text = True)
+     print (f"Restart {service}: code: {r.returncode}: err: {r.stderr}")
+     return (r.returncode == 0, r.stderr + r.stdout)
 
 class sysPyInfo():
   def __init__(self):
@@ -228,7 +232,7 @@ class SysInfo():
     return self.prevTemp["temperature"], self.prevTemp["humidity"]
     #except Exception:
     #  raise Exception("Failed to import lib adafruit_dht")
-    
+
   def showAmbientTempHumid(self):
     temperature, humidity = self.getAmbientTempHumid()
     if temperature is not None or humidity is not None:
@@ -244,10 +248,7 @@ class SysInfo():
     lines.append(CPUN)
     #lines.append(str(CPU,'utf-8'))
     diskio = self.CI.getAvgDiskIO()
-    th=""
-    if self.sensor is not None:
-        th=f", th {self.showAmbientTempHumid()}"
-    MemUsage = f'M {sysPyInfo.getMemUsage()}{th}'
+    MemUsage = f'M {sysPyInfo.getMemUsage()}'
     lines.append(MemUsage)
     netio = self.CI.getAvgNetRXTX()
     #lines.append(net)
@@ -255,23 +256,29 @@ class SysInfo():
     #lines.append(diskio)
     Disk = f'{sysCmdInfo.getDiskUsage(self.mntreg)}'
     lines.append(Disk)
-
     #lines.append("IPs: " + IP)
-
     return lines
-  
+
+  def showExtSensor(self):
+    th=""
+    if self.sensor is not None:
+        th=f"th {self.showAmbientTempHumid()}"
+    return [th]
+
   def showTopProcesses(self):
     return self.CI.showTopProcesses()
 
-  def shutDown(self):
-    return sysCmdInfo.shutdown()
+  def cmdShutdown(self):
+    return sysCmdInfo.cmdShutdown()
 
-  def reboot(self):
-    return sysCmdInfo.reboot()
+  def cmdReboot(self):
+    return sysCmdInfo.cmdReboot()
 
-  def restartUPNP(self):
-    return sysCmdInfo.restartUPNP()
+  def cmdRestartUPNP(self):
+    return sysCmdInfo.cmdRestartService("upmpdcli")
 
- 
+  def cmdRestartMPD(self):
+    return sysCmdInfo.cmdRestartService("mpd")
+
 
 
