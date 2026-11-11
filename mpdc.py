@@ -213,7 +213,7 @@ class MPDC:
       prevStatus = self.prevStatus
       status = self.getStatus(True)
       self.prevStatus = copy.deepcopy(status)
-      current = self.mpd.currentsong()
+      current = self.mpd.currentsong() or {}
       #print("MPD: "+str(status)+"\n"+str(current))
       #out = f'{current["title"]}\n{current["artist"]}'
 
