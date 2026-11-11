@@ -117,8 +117,7 @@ class RadioController(ControllerBase):
         if self.selectStationIn > 0:
             self.selectStationIn = self.selectStationIn - diffTime
             if self.selectStationIn < 0:
-                self.selectStation()
-                self.setScreenMode("player")
+                self.selectStation(True)
 
     def self_close(self, stop=True):
         print("Closing radio player, returning control")
