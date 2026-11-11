@@ -658,6 +658,13 @@ class Controller(ControllerBase):
         self.last_error = r[1]
         self.lShow(r[1], True)
 
+    def cmdRestartMPD(self):
+        r = self.sysinfo.cmdRestartMPD()
+        if not r[0]:
+            self.last_error = r[1]
+        self.last_error = r[1]
+        self.lShow(r[1], True)
+
 # def draw_menu(draw, state):
 #     for i, item in enumerate(menu_items):
 #         prefix = ">" if i == state.menu_index else " "
