@@ -2,8 +2,6 @@ from mpd import MPDClient
 import copy
 
 SHOW_VOLUME_LOOPS = 4
-
-
 MPD_VOLSTEP = 5
 
 class MPDC:
@@ -19,6 +17,7 @@ class MPDC:
     self.showVolumeForLoops = -1
     self.prevPrintState = ""
     self.printState = ""
+    self.dispMaxChars = 30
     try:
       self.connect()
     except Exception as e:
@@ -188,6 +187,8 @@ class MPDC:
         return '%d:%02d' % (min, sec);
 
   def paintPct(pct: float, maxchars: int, char: str="-", delim=""):
+    if delim != "":
+      maxchars -= 2
     nchar = int(float(pct)/100*maxchars)
     return delim + char * nchar + " " * (maxchars - nchar) + delim
 
@@ -219,7 +220,7 @@ class MPDC:
 
     except Exception as e:
       print("Error getting MPD status: "+str(e))
-      self.reconn()
+      #self.reconn()
       return (("-","-","MPD Error"), False)
 
     btr = f'{status.get("bitrate","-")}k'
@@ -247,8 +248,7 @@ class MPDC:
     if self.showVolumeForLoops > 0:
       self.showVolumeForLoops -= 1
       vstat = "Vol: " + str(status.get("volume")) + "% "
-      SCREEN_WIDTH=40
-      vline = MPDC.paintPct(status.get("volume"),SCREEN_WIDTH, "-" , "|")
+      vline = MPDC.paintPct(status.get("volume"), self.dispMaxChars, "-", "|")
     duration = MPDC.fmtSecs(status.get("duration",None))
     timedel=""
     if duration != "":
@@ -272,15 +272,19 @@ class MPDC:
             current.get("title","-"),
             current.get("artist","-"),
             f'{date}{current.get("album","-")}{track}',
-            sline,
-            vline
-    ]
+            sline
+       ]
     if slug:
       ret.pop(2)
       ret.insert(0,slug)
-    slide = [False if i >= 3 else True for i,v in enumerate(ret)]
-  
+    if vline:
+      ret.pop(2)
+      ret.insert(2,vline)
+    slide = [False if vline and i == 2 or i >= 3 else True for i,v in enumerate(ret)]  
     return (ret, slide)
+
+  def setDispMaxChars(self, maxchars):
+    self.dispMaxChars = maxchars
 
   def statusHasChanged(self):
     printChanged = self.printState != self.prevPrintState

@@ -5,6 +5,7 @@
 
 #import time
 
+import math
 import signal
 
 from mpdc import MPDC
@@ -28,6 +29,7 @@ from config import MPD, TRANS, BUTTONS, SYS, DISP, RADIO
 disp = disp_i2c(device_type=DISP.type, fontfile=DISP.font, fontsize=DISP.fontsize, fontxsizes=DISP.fontxsizes)
 
 mpd = MPDC(MPD.host, MPD.port, MPD.password)
+mpd.setDispMaxChars(math.floor(disp.getScreenChars("-")))
 #mpd.printDebug()
 
 sysInfo = SysInfo(SYS.mntreg, SYS.dht_pin)

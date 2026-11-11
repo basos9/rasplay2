@@ -89,6 +89,14 @@ class disp_i2c(disp_oled):
       font = self.font
     return self.height / self._get_line_height(font)
 
+  def getScreenChars(self, char, font=None):
+    if font is None:
+      font = self.font
+    return self.width / self._get_text_width(char, font)
+
+  # def getScreenWidth(self):
+  #   return self.width
+
   def _get_text_width(self, text, font):
     #try:
       #bbox = font.getbbox(text)
