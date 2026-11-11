@@ -586,7 +586,6 @@ class Controller(ControllerBase):
         self.blinkTimeDot = 0 if self.blinkTimeDot == 1 else 1
         return lines
 
-    ## TODO check if thread safe
     def display(self):
         try:
             prevScreen = self.prev_screen
@@ -620,7 +619,7 @@ class Controller(ControllerBase):
             print(f"Exception (display {self.current_screen }): {str(e)}")
             self.last_error = str(e)
             # debug
-            # raise
+            raise e
 
     def displayShutdown(self):
         if self.shutDownCount > 0:

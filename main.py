@@ -62,8 +62,6 @@ except ValueError as e:
     radioCatalogPresets = None
 
 
-
-
 if BUTTONS.keymock:
     print("Keymock enabled ...")
     keymock(ctrl)

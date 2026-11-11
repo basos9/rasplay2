@@ -35,7 +35,7 @@ class RadioController(ControllerBase):
             if event == "clock":
                 return self.clock(*args)
             elif event == "open":
-                return self.selectStation()
+                return self.selectStation(True)
             else:
                 #print(f"Unknown event: {event}")
                 raise e
@@ -73,7 +73,7 @@ class RadioController(ControllerBase):
                 pass
             #elif self.menuController.get_menu() == "catalog":
             #    self.setScreenMode("catalog")
-            elif self.selectStation(False):
+            elif self.selectStation():
                 self.setScreenMode("player")
         elif self.current_screenmode == "player":
             action="menu open"
@@ -91,15 +91,19 @@ class RadioController(ControllerBase):
                 self.self_close()
             #self.display()
         elif self.current_screenmode == "player" :
-             action="player exiting"
-             self.self_close()
-        #     self.setScreenMode("menu")
-        #     self.showPlayerIn = SHOWPLAYER_INSECS *2
-        #     #self.display()
+            action="radio prev"
+            self.menuController.menu_up()
+            self.selectStation()
+        #     self.self_close()
         return action
 
     def onRight(self):
         action=""
+        if self.current_screenmode == "player" :
+            action="radio prev"
+            self.menuController.menu_down()
+            self.selectStation()
+        #     self.self_close()
         return action
 
     def clock(self, diffTime):
@@ -114,6 +118,7 @@ class RadioController(ControllerBase):
             self.selectStationIn = self.selectStationIn - diffTime
             if self.selectStationIn < 0:
                 self.selectStation()
+                self.setScreenMode("player")
 
     def self_close(self, stop=True):
         print("Closing radio player, returning control")
@@ -131,7 +136,7 @@ class RadioController(ControllerBase):
         print(f"Schedule Select station")
         self.selectStationIn = SELECT_DELAY
     
-    def selectStation(self, schedPlayer = True):
+    def selectStation(self, schedPlayer = False):
         self.selectStationIn = -1
         sta = self.menuController.get_menu()
         if sta in self.memory:
